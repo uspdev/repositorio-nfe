@@ -14,7 +14,8 @@
         "uspdev/laravel-tools": "^0.1.0",
         "uspdev/laravel-usp-theme": "^2.5",
         "uspdev/replicado": "^1.13",
-        "uspdev/senhaunica-socialite": "^4.3"
+        "uspdev/senhaunica-socialite": "^4.3",
+        "webklex/laravel-imap": "^3.0.0-alpha"
     },
     "require-dev": {
         "facade/ignition": "^2.5",

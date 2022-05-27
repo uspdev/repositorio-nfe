@@ -1,35 +1,10 @@
-# Starter
+# Repositório NFE
 
-* Esta aplicação já tem as bibliotecas USPDev pré configuradas
-* Inicio
-```
-    git clone git@github.com:uspdev/starter sua-aplicacao
-    cd sua-aplicacao
-    composer install
-    cp .env.example .env
-    php artisan key:generate
-    php artisan migrate
-```
-* Crie seu repositório remoto e faça as seguintes configurações
-```
-    git remote remove origin
-    git remote add origin git@github.com:uspdev/sua-aplicacao
-    git branch --set-upstream-to=origin/main main
-    git push
-```
-* Utilize o readme.md como exemplo
-* Remova o que for desnecessário
-* Verifique o .env.example
-
----
-
-# Minha Aplicação
-
-Diga o que é sua aplicação.
+Respositório de notas fiscais eletrônicas recebidas, para fins de prestação de contas da área financeira.
 ## Funcionalidades
 
-* Descreva suas funcionalidades aqui
-* Pode colocar prints de tela
+* Recebe automaticamente as notas de um email;
+* Valida a nota e consulta a sefaz, por meio do webservice nfe-ws
 
 ## Requisitos
 
@@ -37,6 +12,14 @@ O que é necessário para rodar esta aplicação
 
 ## Atualização
 
+O processo precisa ser restartado se atualizado
+
+    supervisorctl restart repositorio-nfe-imap-idle:*
+
+Pode matar o processo que o supervisor vai startar novamente
+
+    pkill 
+    
 [Se houver instruções específicas sobre atualizações, descreva aqui.]
 
 ### Em produção
@@ -50,6 +33,23 @@ Para receber as últimas atualizações do sistema rode:
 
 
 ## Instalação
+
+Configuração do supervisor
+
+    [program:repositorio-nfe-imap-idle]
+    command=/usr/bin/php /home/kawabata/git/uspdev/repositorio-nfe/artisan imap:idle
+    process_num=1
+    user=kawabata
+    numprocs=1
+    #process_name=%(process_num)s
+    process_name=%(program_name)s
+    priority=999
+    autostart=true
+    autorestart=unexpected
+    startretries=3
+    stopsignal=QUIT
+    stdout_logfile=/home/kawabata/git/uspdev/repositorio-nfe/storage/logs/supervisor-imap-idle-stdout.log
+
 
 [Descreva como instalar a aplicação]
 

@@ -113,6 +113,13 @@ return [
         'emergency' => [
             'path' => storage_path('logs/laravel.log'),
         ],
+
+        'imapIdle' => [
+            'driver' => 'daily',
+            'path' => storage_path('logs/imap-idle.log'),
+            'level' => env('LOG_LEVEL', 'debug'),
+            'days' => 120,
+        ]
     ],
 
 ];
