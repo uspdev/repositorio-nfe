@@ -119,6 +119,13 @@ return [
             'path' => storage_path('logs/imap-idle.log'),
             'level' => env('LOG_LEVEL', 'debug'),
             'days' => 120,
+        ],
+
+        'imapCron' => [
+            'driver' => 'daily',
+            'path' => storage_path('logs/imap-cron.log'),
+            'level' => env('LOG_LEVEL', 'debug'),
+            'days' => 120,
         ]
     ],
 

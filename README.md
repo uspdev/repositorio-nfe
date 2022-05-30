@@ -51,6 +51,15 @@ Configuração do supervisor
     stdout_logfile=/home/kawabata/git/uspdev/repositorio-nfe/storage/logs/supervisor-imap-idle-stdout.log
 
 
+Configuração do cron
+
+    * * * * * cd /path-to-your-project && php artisan schedule:run >> /dev/null 2>&1
+
+Rodando manualmente
+
+    php artisan schedule:work
+
+
 [Descreva como instalar a aplicação]
 
 ### Básico

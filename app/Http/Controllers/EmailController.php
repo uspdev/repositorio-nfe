@@ -2,9 +2,10 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Email;
+use Illuminate\Support\Facades\Session;
 use App\Http\Requests\StoreEmailRequest;
 use App\Http\Requests\UpdateEmailRequest;
-use App\Models\Email;
 
 class EmailController extends Controller
 {
@@ -15,7 +16,14 @@ class EmailController extends Controller
      */
     public function index()
     {
-        //
+        $emails = Email::orderBy('id','desc')->paginate(100);
+        return view('emails.index', compact('emails'));
+    }
+
+    public function verificarNovos() {
+        $ret = Email::verificarNovos();
+        Session::flash('alert-info', 'Encontradas '. $ret['newMessages'] . ' novas mensagens!');
+        return back();
     }
 
     /**

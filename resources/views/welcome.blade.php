@@ -7,7 +7,7 @@
 
   @foreach ($messages as $message)
     @php
-      \App\Models\Email::storeNewMessage($message);
+      // \App\Models\Email::storeNewMessage($message);
       // Log::notice('chegou nova mensagem');
     @endphp
     <div>
