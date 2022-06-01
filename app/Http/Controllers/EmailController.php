@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Email;
+use App\Imap\Messages;
 use Illuminate\Support\Facades\Session;
 use App\Http\Requests\StoreEmailRequest;
 use App\Http\Requests\UpdateEmailRequest;
@@ -16,13 +17,18 @@ class EmailController extends Controller
      */
     public function index()
     {
-        $emails = Email::orderBy('id','desc')->paginate(100);
+        // não vamos selecionar todas as colunas para não sobrecarregar a memória
+        $emails = Email::orderBy('id', 'desc')
+            ->select(['id', 'message_id', 'date', 'subject', 'to', 'from', 'status', 'unidade'])
+            ->paginate(100);
+
         return view('emails.index', compact('emails'));
     }
 
-    public function verificarNovos() {
+    public function verificarNovos()
+    {
         $ret = Email::verificarNovos();
-        Session::flash('alert-info', 'Encontradas '. $ret['newMessages'] . ' novas mensagens!');
+        Session::flash('alert-info', 'Encontradas ' . $ret['newMessages'] . ' novas mensagens!');
         return back();
     }
 

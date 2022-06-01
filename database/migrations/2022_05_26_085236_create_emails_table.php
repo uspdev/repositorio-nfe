@@ -16,13 +16,14 @@ class CreateEmailsTable extends Migration
         Schema::create('emails', function (Blueprint $table) {
             $table->id();
             $table->string('message_id');
-            $table->timestamp('data');
-            $table->string('assunto', 255);
-            $table->string('remet', 255);
-            $table->json('header');
+            $table->timestamp('date');
+            $table->string('subject', 512);
+            $table->string('to', 1024);
+            $table->string('from', 512);
+            $table->text('raw_header')->nullable();
+            $table->longtext('raw_body')->nullable();
             $table->json('status')->nullable();
             $table->string('unidade', 10)->nullable();
-            $table->integer('ano');
             $table->timestamps();
         });
     }

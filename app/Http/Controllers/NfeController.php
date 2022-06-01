@@ -15,7 +15,8 @@ class NfeController extends Controller
      */
     public function index()
     {
-        //
+        $nfes = Nfe::all();
+        return view('nfes.index', compact('nfes'));
     }
 
     /**

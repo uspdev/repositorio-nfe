@@ -2,11 +2,11 @@
 
 namespace App\Models;
 
-use Illuminate\Support\Arr;
-use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Casts\AsArrayObject;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
+use App\Imap\Messages;
 use Webklex\IMAP\Facades\Client;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Casts\Attribute;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class Email extends Model
 {
@@ -18,8 +18,7 @@ class Email extends Model
      * @var array
      */
     protected $casts = [
-        'header' => 'array',
-        'data' => 'datetime',
+        'date' => 'datetime',
         'status' => 'array',
     ];
 
@@ -35,24 +34,21 @@ class Email extends Model
 
     public static function verificarNovos()
     {
-        $client = Client::account('default');
-        $client->connect();
-        $folder = $client->getFolder('INBOX');
         $lastMessage = Email::orderBy('created_at', 'desc')->first();
-        $lastMessageDate = $lastMessage ? $lastMessage->created_at : now()->subDays(10);
+        $lastMessageDate = $lastMessage ? $lastMessage->created_at : now()->subDays(2);
 
-        $messages = $folder->query()->since($lastMessageDate)->softFail()->get();
+        $messages = Messages::getMessagesSince($lastMessageDate);
         $count = 0;
         foreach ($messages as $message) {
             if (Email::storeNewMessage($message)) {
                 $count++;
             }
         }
-        $ret['lastMessageDate'] = $lastMessageDate;
-        $ret['totalMessages'] = count($messages);
-        $ret['newMessages'] = $count;
-
-        return $ret;
+        return [
+            'lastMessageDate' => $lastMessageDate,
+            'totalMessages' => count($messages),
+            'newMessages' => $count,
+        ];
     }
 
     /**
@@ -60,41 +56,25 @@ class Email extends Model
      */
     public static function storeNewMessage($message)
     {
-        $headerAttributes = $message->getHeader()->getAttributes();
-        $headers = [];
-        foreach ($headerAttributes as $key => $imapHeader) {
-            if ($key == 'date') {
-                // algumas mensagens não perseiam a data para o timezone correto usando o toString()
-                $headers[$key] = $imapHeader[0]->setTimezone(config('app.timezone'));
-            } else {
-                $headers[$key] = $imapHeader->toString();
-            }
-        }
+        $headers = Messages::getParsedHeaders($message);
 
         // salva se não existir baseado na data e no assunto
-        if (Email::where('data', $headerAttributes['date'])->where('assunto', $headerAttributes['subject'])->doesntExist()) {
+        if (Email::where('date', $headers['date'])->where('subject', $headers['subject'])->doesntExist()) {
             $email = new Email;
             $email->message_id = $headers['message_id'];
-            $email->header = $headers;
-            $email->data = $headers['date'];
-            $email->assunto = $headerAttributes['subject'];
-            $email->remet = $headerAttributes['from'];
+            $email->date = $headers['date'];
+            $email->subject = $headers['subject'];
+            $email->to = $headers['to'];
+            $email->from = $headers['from'];
+            $email->raw_header = $message->getHeader()->raw;
+            $email->raw_body = $message->getRawBody();
 
             $status['parsed'] = false;
-            $status['anexos'] = [];
-            if ($message->hasAttachments()) {
-                foreach ($message->getAttachments() as $attachment) {
-                    $attributes = $attachment->getAttributes();
-                    $anexo['content_type'] = $attributes['content_type'];
-                    $anexo['name'] = $attributes['name'];
-                    $anexo['size'] = $attributes['size'];
-                    $status['anexos'] = $anexo;
-                }
-            }
+            $status['anexos'] = Messages::getAttachments($message);
+            // Messages::parseAttachments($message);
 
             $email->status = $status;
-            $email->ano = now()->year;
-            $email->unidade = SELF::obterUndade(json_encode($headers));
+            $email->unidade = SELF::obterUnidade($email->raw_header);
             $email->save();
             return true;
         }
@@ -104,7 +84,7 @@ class Email extends Model
     /**
      * procura na string fornecida (header do email) um email correspondete à unidade
      */
-    public static function obterUndade($string)
+    public static function obterUnidade($string)
     {
         $unidades = [
             [
@@ -126,5 +106,19 @@ class Email extends Model
             }
         }
         return 'NONE';
+    }
+
+    
+    public function getRawBodyAttribute($value) {
+        return utf8_decode($value);
+    }
+
+    /**
+     * Se não converter para utf8 dá erro em alguns emails
+     * 
+     * Isso já acontecia no gerenciador-nfe antigo
+     */
+    public function setRawBodyAttribute($value) {
+        $this->attributes['raw_body'] = utf8_encode($value);
     }
 }

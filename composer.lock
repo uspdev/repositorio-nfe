@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "fd027c100c720f0df1293da409554527",
+    "content-hash": "827af60f0d066e5c87ca90c5396350b7",
     "packages": [
         {
             "name": "asm89/stack-cors",
@@ -6012,6 +6012,50 @@
                 "source": "https://github.com/uspdev/laravel-usp-theme/tree/2.5.0"
             },
             "time": "2022-04-20T19:16:34+00:00"
+        },
+        {
+            "name": "uspdev/nfe-ws-consumer",
+            "version": "v0.1.1",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/uspdev/nfe-ws-consumer.git",
+                "reference": "8c4f80e7444c76f329a4d8e95c55859a250afe80"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/uspdev/nfe-ws-consumer/zipball/8c4f80e7444c76f329a4d8e95c55859a250afe80",
+                "reference": "8c4f80e7444c76f329a4d8e95c55859a250afe80",
+                "shasum": ""
+            },
+            "require": {
+                "ext-curl": "*",
+                "php": ">=5.3.0"
+            },
+            "require-dev": {
+                "phpspec/phpspec": "^5.1"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "Uspdev\\Nfe\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "GPL-2.0-or-later"
+            ],
+            "authors": [
+                {
+                    "name": "Masaki Kawabata Net",
+                    "email": "kawabata@usp.br"
+                }
+            ],
+            "description": "API para consumir dados de uspdev/nfe-ws",
+            "support": {
+                "issues": "https://github.com/uspdev/nfe-ws-consumer/issues",
+                "source": "https://github.com/uspdev/nfe-ws-consumer/tree/master"
+            },
+            "time": "2018-11-20T16:27:46+00:00"
         },
         {
             "name": "uspdev/replicado",

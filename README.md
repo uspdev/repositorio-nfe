@@ -31,7 +31,9 @@ Para receber as últimas atualizações do sistema rode:
     php artisan migrate
 
 
+php -m | grep mailparse
 
+apt install php-mailparse
 ## Instalação
 
 Configuração do supervisor
