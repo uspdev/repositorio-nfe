@@ -4,9 +4,7 @@ namespace App\Models;
 
 use App\Services\Nfews;
 use PhpMimeMailParser\Parser;
-use Illuminate\Support\Carbon;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Facades\Storage;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class Nfe extends Model
@@ -103,5 +101,20 @@ class Nfe extends Model
             'newNfes' => $nfeCount,
             'attachments' => $attachments,
         ];
+    }
+
+    /**
+     * Retorna os anexos de um email usando o php-mime-mail-parser
+     * 
+     * @param String $rawEmail
+     * @return collection
+     */
+    public static function listarAnexos($rawEmail)
+    {
+        $parser = new Parser();
+        $parser->setText($rawEmail);
+
+        $attachments = $parser->getAttachments([true]);
+        return $attachments;
     }
 }

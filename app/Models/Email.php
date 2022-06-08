@@ -86,7 +86,7 @@ class Email extends Model
             $email->to = $message->toString;
             $email->from = mb_decode_mimeheader($message->headers->fromaddress);
             $email->raw_header = $message->headersRaw;
-            $email->raw_body = Imap::connect()->getRawMail($message->id);
+            $email->raw_body = Imap::getMailbox()->getRawMail($message->id);
 
             $email->status = ['parsed' => false];
             $email->unidade = SELF::obterUnidade($email->raw_header);

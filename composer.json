@@ -17,6 +17,7 @@
         "laravel/sanctum": "^2.11",
         "laravel/tinker": "^2.5",
         "php-imap/php-imap": "^5.0",
+        "php-mime-mail-parser/php-mime-mail-parser": "^7.1",
         "uspdev/laravel-tools": "^0.1.0",
         "uspdev/laravel-usp-theme": "^2.5",
         "uspdev/nfe-ws-consumer": "dev-master",
