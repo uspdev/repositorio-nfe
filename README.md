@@ -10,6 +10,8 @@ Respositório de notas fiscais eletrônicas recebidas, para fins de prestação 
 
 O que é necessário para rodar esta aplicação
 
+* php-mailparse
+
 ## Atualização
 
 O processo precisa ser restartado se atualizado

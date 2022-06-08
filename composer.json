@@ -1,8 +1,13 @@
 {
-    "name": "laravel/laravel",
+    "name": "uspdev/repositorio-nfe",
     "type": "project",
-    "description": "The Laravel Framework.",
-    "keywords": ["framework", "laravel"],
+    "description": "Repositório de notas fiscais recebidas",
+    "keywords": [
+        "nfe",
+        "repositório",
+        "validação",
+        "sefaz"
+    ],
     "license": "MIT",
     "require": {
         "php": "^7.3|^8.0",
@@ -11,13 +16,21 @@
         "laravel/framework": "^8.75",
         "laravel/sanctum": "^2.11",
         "laravel/tinker": "^2.5",
+        "php-imap/php-imap": "^5.0",
+        "php-mime-mail-parser/php-mime-mail-parser": "^7.1",
         "uspdev/laravel-tools": "^0.1.0",
         "uspdev/laravel-usp-theme": "^2.5",
-        "uspdev/nfe-ws-consumer": "^0.1.1",
+        "uspdev/nfe-ws-consumer": "dev-master",
         "uspdev/replicado": "^1.13",
         "uspdev/senhaunica-socialite": "^4.3",
         "webklex/laravel-imap": "^3.0.0-alpha"
     },
+    "repositories": [
+        {
+            "type": "path",
+            "url": "../nfe-ws-consumer"
+        }
+    ],
     "require-dev": {
         "facade/ignition": "^2.5",
         "fakerphp/faker": "^1.9.1",
@@ -32,7 +45,10 @@
             "App\\": "app/",
             "Database\\Factories\\": "database/factories/",
             "Database\\Seeders\\": "database/seeders/"
-        }
+        },
+        "files": [
+            "app/helpers.php"
+        ]
     },
     "autoload-dev": {
         "psr-4": {

@@ -15,13 +15,20 @@
 </tr>
     @foreach ($emails as $email)
       <tr>
-        <td>{{ $email->date->format('d/m/Y H:i') }}</td>
+        <td>{{ $email->date }}</td>
+        {{-- <td>{{ $email->date->format('d/m/Y H:i') }}</td> --}}
         <td title="{{ $email->from }}">{{ strip_tags($email->from) }} </td>
         <td title="{{ $email->to }}">{{ strip_tags($email->to) }} </td>
         <td>{{ $email->subject }} </td>
         <td>{{ $email->unidade }}</td>
-        <td>{{ count($email->status('anexos')) }}</td>
-        <td>{{ $email->status('parsed') ? 'sim' : 'não' }}</td>
+        <td>
+          @foreach($email->status('attachments') as $attachment)
+          {{ $attachment['filename'] }} - {{ json_encode($attachment['statusConsulta']) ?? '' }}<br>
+          @endforeach
+        </td>
+        <td>
+          <a href="emails/{{ $email->id }}/parse">P</a>
+          {{ $email->status('parsed') ? 'sim' : 'não' }}</td>
       </tr>
     @endforeach
   </table>

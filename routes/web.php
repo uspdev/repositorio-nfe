@@ -19,7 +19,16 @@ Route::get('/', function(){
     return view('index');
 });
 
+Route::get('/nfews-status', function(){
+    return App\Models\Nfe::nfeWs()->status();
+    
+});
+
+Route::get('nfes/{nfe}/xml', [NfeController::class, 'xmlDownload']);
+Route::get('nfes/{nfe}/danfe', [NfeController::class, 'danfeDownload']);
+Route::get('nfes/{nfe}/sefaz', [NfeController::class, 'sefazDownload']);
 Route::resource('nfes', NfeController::class);
 
 Route::get('emails/verificarNovos', [EmailController::class, 'verificarNovos']);
+Route::get('emails/{email}/parse', [EmailController::class, 'parse']);
 Route::resource('emails', EmailController::class);

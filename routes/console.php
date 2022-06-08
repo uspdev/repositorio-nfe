@@ -1,5 +1,6 @@
 <?php
 
+use App\Models\Nfe;
 use App\Models\Email;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Foundation\Inspiring;
@@ -24,8 +25,12 @@ Artisan::command('inspire', function () {
 Artisan::command('emails:receive', function () {
 
     $ret = Email::verificarNovos();
+    $msgEmail = 'desde: ' . $ret['lastMessageDate'] . ', baixados: ' . $ret['totalMessages'] . ', novos: ' . $ret['newMessages'];
 
-    $msg = 'novas nfes desde ' . $ret['lastMessageDate'] . ' - ' . $ret['newMessages'] . ' mensagens de '. $ret['totalMessages'];
-    $this->comment($msg);
-    Log::channel('imapCron')->notice('rodou cron', ['mensagem' => $msg]);
+    $ret = Nfe::parsearNovosEmails();
+    $msgNfe = 'novos emails: ' . $ret['novosEmails'] . ', novas Nfes: ' . $ret['novasNfes'];
+
+    $this->comment($msgEmail);
+    $this->comment($msgNfe);
+    Log::channel('imapCron')->notice('rodou cron', ['email' => $msgEmail, 'nfe' => $msgNfe]);
 })->purpose('Procura novos emails e parseia NFEs.');

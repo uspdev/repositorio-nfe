@@ -5,22 +5,31 @@
 
   <table class="table table-bordered table-sm table-stripped table-hover">
 <tr>
-    <th>Data</th>
-    <th>De</th>
-    <th>Assunto</th>
+  <th>Sefaz</th>
+  <th>Emitente</th>
+    <th>Destinatário</th>
+    <th>Nro/Série</th>
+    <th>Data Emi</th>
+    <th>Total</th>
     <th>Unidade</th>
-    <th>Anexos</th>
-    <th>Parsed</th>
+    <th>Email</th>
 </tr>
-    {{-- @foreach ($emails as $email)
+    @foreach ($nfes as $nfe)
       <tr>
-        <td>{{ $email->data->format('d/m/Y H:i') }}</td>
-        <td title="{{ $email->remet }}">{{ strip_tags($email->remet) }} </td>
-        <td>{{ $email->assunto }} </td>
-        <td>{{ $email->unidade }}</td>
-        <td>{{ count($email->status('anexos')) }}</td>
-        <td>{{ $email->status('parsed') ? 'sim' : 'não' }}</td>
+        <td>
+          {{ $nfe->consulta['cStat'] }} |
+          <a href="nfes/{{ $nfe->id }}/xml" title="xml"><i class="fas fa-file-code"></i></a> |
+          <a href="nfes/{{ $nfe->id }}/danfe" title="DANFE"><i class="far fa-file-pdf"></i></a> |
+          <a href="nfes/{{ $nfe->id }}/sefaz" title="Sefaz"><i class="fa fa-file-prescription"></i></a>
+        </td>
+        <td title="{{ formatarCnpjCpf($nfe->emit['cnpj']) }}">{{ $nfe->emit['nome'] }}</td>
+        <td>{{ $nfe->dest['nome'] }} - {{ formatarCnpjCpf($nfe->dest['cnpj']) }}</td>
+        <td>{{ $nfe->ide['nro'] }}/{{ $nfe->ide['serie'] }} </td>
+        <td>{{ formatarDataNfe($nfe->ide['dataemi']) }} </td>
+        <td>{{ $nfe->ide['total'] }} </td>
+        <td>{{ $nfe->unidade }} </td>
+        <td>{{ $nfe->email_id }} </td>
       </tr>
-    @endforeach --}}
+    @endforeach
   </table>
 @endsection

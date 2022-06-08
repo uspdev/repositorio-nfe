@@ -17,11 +17,11 @@ class CreateNfesTable extends Migration
             $table->id();
             $table->decimal('chave', 44, 0);
             $table->longText('xml');
-            $table->text('prot'); //xml
+            $table->json('prot'); //xml
             $table->json('emit');
             $table->json('dest');
             $table->json('ide');
-            $table->json('sefaz');
+            $table->json('consulta');
             $table->text('infadic');
             $table->string('unidade', 10)->nullable();
             $table->integer('ano');

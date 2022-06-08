@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Nfe;
 use App\Models\Email;
 use App\Imap\Messages;
 use Illuminate\Support\Facades\Session;
@@ -28,7 +29,16 @@ class EmailController extends Controller
     public function verificarNovos()
     {
         $ret = Email::verificarNovos();
+        Nfe::parsearNovosEmails();
         Session::flash('alert-info', 'Encontradas ' . $ret['newMessages'] . ' novas mensagens!');
+        return back();
+    }
+
+    public function parse(Email $email)
+    {
+        $ret = Nfe::parsearEmail($email);
+
+        Session::flash('alert-info', ' novas Nfes: ' . $ret['newNfes'] . ', anexos: '  . count($ret['attachments']));
         return back();
     }
 

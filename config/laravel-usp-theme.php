@@ -49,6 +49,11 @@ $menu = [
         'url' => 'emails',
         'can' => '',
     ],
+    [
+        'text' => 'Status',
+        'url' => 'nfews-status', 
+        'can' => '',
+    ]
 ];
 
 $right_menu = [

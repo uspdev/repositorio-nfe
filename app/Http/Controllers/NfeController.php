@@ -2,9 +2,10 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Nfe;
+use App\Services\Nfews;
 use App\Http\Requests\StoreNfeRequest;
 use App\Http\Requests\UpdateNfeRequest;
-use App\Models\Nfe;
 
 class NfeController extends Controller
 {
@@ -15,8 +16,47 @@ class NfeController extends Controller
      */
     public function index()
     {
-        $nfes = Nfe::all();
+        $nfes = Nfe::orderBy('created_at', 'desc')->get();
         return view('nfes.index', compact('nfes'));
+    }
+
+    /**
+     * Faz o download do arquivo xml da nfe
+     */
+    public static function xmlDownload(Nfe $nfe)
+    {
+        $filename = $nfe->chave . '-procNFe.xml';
+        return response()->streamDownload(function () use ($nfe) {
+            echo $nfe->xml;
+        }, $filename, ['content-type' => 'text/xml']);
+    }
+
+    /**
+     * Faz o download da danfe
+     */
+    public static function danfeDownload(Nfe $nfe)
+    {
+        $danfe = Nfews::getInstance()->obterDanfe($nfe->xml);
+        $filename = $nfe->chave . '-Danfe.pdf';
+        $contentType = ['content-type' => 'application/x-pdf'];
+
+        return response()->streamDownload(function () use ($danfe) {
+            echo $danfe;
+        }, $filename, $contentType);
+    }
+
+    /**
+     * Faz o download do relatório da sefaz
+     */
+    public static function sefazDownload(Nfe $nfe)
+    {
+        $sefaz = Nfews::getInstance()->obterSefaz($nfe->xml);
+        $filename = $nfe->chave . '-Sefaz.pdf';
+        $contentType = ['content-type' => 'application/x-pdf'];
+
+        return response()->streamDownload(function () use ($sefaz) {
+            echo $sefaz;
+        }, $filename, $contentType);
     }
 
     /**

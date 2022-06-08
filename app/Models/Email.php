@@ -2,10 +2,8 @@
 
 namespace App\Models;
 
-use App\Imap\Messages;
-use Webklex\IMAP\Facades\Client;
+use App\Services\Imap;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class Email extends Model
@@ -23,27 +21,46 @@ class Email extends Model
     ];
 
     protected $defaultStatus = [
-        'anexos' => [],
+        'attachments' => [],
         'parsed' => false,
     ];
 
+    /**
+     * Retorna o status correspondente à chave $key de $email->status
+     */
     public function status($key)
     {
         return $this->status[$key] ?? $this->defaultStatus[$key] ?? null;
     }
 
+    /**
+     * Retorna a data de criação do ultimo email persistido
+     * 
+     * Se for uma instalação nova retorna os últimos $sub dias
+     */
+    public static function obterDataUltimoEmail()
+    {
+        $sub = 5;
+        $lastMessage = Email::orderBy('created_at', 'desc')->first();
+        return $lastMessage ? $lastMessage->created_at : now()->subDays($sub);
+    }
+
+    /**
+     * Consulta servidor imap por novos emails e guarda
+     * 
+     * Agendado para rodar de hora em hora no app\console\kernel.php
+     */
     public static function verificarNovos()
     {
-        $lastMessage = Email::orderBy('created_at', 'desc')->first();
-        $lastMessageDate = $lastMessage ? $lastMessage->created_at : now()->subDays(2);
-
-        $messages = Messages::getMessagesSince($lastMessageDate);
+        $lastMessageDate = SELF::obterDataUltimoEmail();
+        $messages = Imap::getMessagesSince($lastMessageDate);
         $count = 0;
         foreach ($messages as $message) {
-            if (Email::storeNewMessage($message)) {
-                $count++;
-            }
+            Email::guardarNovo($message) && $count++;
         }
+
+        // vamos desconectar aqui pois email::guardarNovo tambḿe conecta no imap
+        Imap::disconnect();
         return [
             'lastMessageDate' => $lastMessageDate,
             'totalMessages' => count($messages),
@@ -52,28 +69,26 @@ class Email extends Model
     }
 
     /**
-     * Guarda uma mensagem que veio pelo imap no banco de dados
+     * Guarda uma mensagem que veio pelo imap no banco de dados se já não existir baseado na data e assunto
+     * 
+     * Metodo separado para poder ser chamado pelo IDLE (que não está funcionado direito)
+     * 
+     * @param $message Head do email parseado
      */
-    public static function storeNewMessage($message)
+    public static function guardarNovo($message)
     {
-        $headers = Messages::getParsedHeaders($message);
-
-        // salva se não existir baseado na data e no assunto
-        if (Email::where('date', $headers['date'])->where('subject', $headers['subject'])->doesntExist()) {
+        // verificando repoetidos por data e assunto
+        if (Email::where('date', $message->date)->where('subject', $message->subject)->doesntExist()) {
             $email = new Email;
-            $email->message_id = $headers['message_id'];
-            $email->date = $headers['date'];
-            $email->subject = $headers['subject'];
-            $email->to = $headers['to'];
-            $email->from = $headers['from'];
-            $email->raw_header = $message->getHeader()->raw;
-            $email->raw_body = $message->getRawBody();
+            $email->message_id = $message->messageId;
+            $email->date = $message->date;
+            $email->subject = $message->subject;
+            $email->to = $message->toString;
+            $email->from = mb_decode_mimeheader($message->headers->fromaddress);
+            $email->raw_header = $message->headersRaw;
+            $email->raw_body = Imap::connect()->getRawMail($message->id);
 
-            $status['parsed'] = false;
-            $status['anexos'] = Messages::getAttachments($message);
-            // Messages::parseAttachments($message);
-
-            $email->status = $status;
+            $email->status = ['parsed' => false];
             $email->unidade = SELF::obterUnidade($email->raw_header);
             $email->save();
             return true;
@@ -84,7 +99,7 @@ class Email extends Model
     /**
      * procura na string fornecida (header do email) um email correspondete à unidade
      */
-    public static function obterUnidade($string)
+    public static function obterUnidade($rawHeader)
     {
         $unidades = [
             [
@@ -100,7 +115,7 @@ class Email extends Model
         ];
 
         foreach ($unidades as $unidade) {
-            if (stripos($string, ' ' . $unidade['emailNfe']) !== false) {
+            if (mb_stripos($rawHeader, ' ' . $unidade['emailNfe']) !== false) {
                 // o espaço em branco ajuda a delimitar o email
                 return $unidade['sigla'];
             }
@@ -108,8 +123,12 @@ class Email extends Model
         return 'NONE';
     }
 
-    
-    public function getRawBodyAttribute($value) {
+
+    /**
+     * Como foi guardado em utf8, vamos reverter ao acessar
+     */
+    public function getRawBodyAttribute($value)
+    {
         return utf8_decode($value);
     }
 
@@ -118,7 +137,8 @@ class Email extends Model
      * 
      * Isso já acontecia no gerenciador-nfe antigo
      */
-    public function setRawBodyAttribute($value) {
+    public function setRawBodyAttribute($value)
+    {
         $this->attributes['raw_body'] = utf8_encode($value);
     }
 }
