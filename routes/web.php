@@ -20,7 +20,7 @@ Route::get('/', function(){
 });
 
 Route::get('/nfews-status', function(){
-    return App\Models\Nfe::nfeWs()->status();
+    return view('nfews-status', ['status'=>App\Services\Nfews::getInstance()->status()]);
     
 });
 

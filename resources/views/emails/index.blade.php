@@ -15,8 +15,7 @@
 </tr>
     @foreach ($emails as $email)
       <tr>
-        <td>{{ $email->date }}</td>
-        {{-- <td>{{ $email->date->format('d/m/Y H:i') }}</td> --}}
+        <td>{{ $email->date->format('d/m/Y H:i') }}</td>
         <td title="{{ $email->from }}">{{ strip_tags($email->from) }} </td>
         <td title="{{ $email->to }}">{{ strip_tags($email->to) }} </td>
         <td>{{ $email->subject }} </td>

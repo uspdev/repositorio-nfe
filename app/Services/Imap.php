@@ -12,10 +12,14 @@ class Imap
 	public static function getMailbox()
 	{
 		if (SELF::$mailbox == null) {
+			$host = config('imap.host');
+			$port = config('imap.port');
+			$encryption = config('imap.encryption');
+			$hostString = '{' . $host . ':' . $port . '/' . $encryption . '/novalidate-cert/imap}INBOX';
 			SELF::$mailbox = new Mailbox(
-				'{imap.gmail.com:993/ssl/novalidate-cert/imap}INBOX',
-				'delos-nfe@eesc.usp.br',
-				'Limc2932()',
+				$hostString,
+				config('imap.username'),
+				config('imap.password'),
 				false // when $attachmentsDir is false we don't save attachments
 			);
 		}
