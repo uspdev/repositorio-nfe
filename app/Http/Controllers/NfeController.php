@@ -50,7 +50,14 @@ class NfeController extends Controller
      */
     public static function sefazDownload(Nfe $nfe)
     {
+        $consulta = Nfews::getInstance()->consultaXML($nfe->xml);
+        if ($consulta['sefaz']['dhConsulta'] != $nfe->consulta['dhConsulta']) {
+            $nfe->prot = $consulta['prot'];
+            $nfe->consulta = $consulta['sefaz'];
+            $nfe->save();
+        }
         $sefaz = Nfews::getInstance()->obterSefaz($nfe->xml);
+
         $filename = $nfe->chave . '-Sefaz.pdf';
         $contentType = ['content-type' => 'application/x-pdf'];
 
