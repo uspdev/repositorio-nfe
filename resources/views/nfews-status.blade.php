@@ -1,6 +1,7 @@
 @extends('layouts.app')
 
 @section('content')
-    {!! $status !!}
-
-  @endsection
+  Servidor: <b>{{ config('nfe.nfeWs.server') }}</b><br>
+  <br>
+  {!! $status !!}
+@endsection

@@ -19,7 +19,7 @@ if (!function_exists('formatarCnpjCpf')) {
 
 /**
  * Recebe uma string de data de NFE "d/m/Y - H:i:s" e apresenta "d/m/Y"
- * 
+ *
  * @param String $value
  * @return String
  */
@@ -27,5 +27,20 @@ if (!function_exists('formatarDataNfe')) {
     function formatarDataNfe($value)
     {
         return explode('-', $value)[0];
+    }
+}
+
+/**
+ * Recebe uma string de data de NFE "d/m/Y - H:i:s" e apresenta "d/m/Y"
+ *
+ * @param String $value
+ * @return String
+ */
+if (!function_exists('formatarEnDataNfe')) {
+    function formatarEnDataNfe($value)
+    {
+        $data = trim(explode('-', $value)[0]);
+        $parts = explode('/', $data);
+        return $parts[2].'-'.$parts[1].'-'.$parts[0];
     }
 }
