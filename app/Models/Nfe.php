@@ -49,7 +49,7 @@ class Nfe extends Model
 
     /**
      * Parseia o email em busca de anexos e nfes
-     * 
+     *
      * @param App\Models\Email $email
      */
     public static function parsearEmail(Email $email)
@@ -62,7 +62,7 @@ class Nfe extends Model
             $content = $anexo->getContent();
             if (strtolower(substr($anexo->getFilename(), -3)) == 'xml') {
                 $consulta = Nfews::getInstance()->consultaXML($content);
-                if ($consulta['status'] == 'ok') {
+                if (isset($consulta['status']) && $consulta['status'] == 'ok') {
                     if (Nfe::where('chave', $consulta['chave'])->doesntExist()) {
                         $nfe = new Nfe;
                         $nfe->chave = $consulta['chave'];
@@ -105,7 +105,7 @@ class Nfe extends Model
 
     /**
      * Retorna os anexos de um email usando o php-mime-mail-parser
-     * 
+     *
      * @param String $rawEmail
      * @return collection
      */
