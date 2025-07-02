@@ -16,6 +16,8 @@ class NfeController extends Controller
      */
     public function index()
     {
+        \UspTheme::activeUrl('nfes');
+
         $nfes = Nfe::orderBy('created_at', 'desc')->get();
         return view('nfes.index', compact('nfes'));
     }

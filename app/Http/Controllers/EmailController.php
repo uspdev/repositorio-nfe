@@ -18,6 +18,7 @@ class EmailController extends Controller
      */
     public function index()
     {
+        \UspTheme::activeUrl('emails');
         // não vamos selecionar todas as colunas para não sobrecarregar a memória
         $emails = Email::orderBy('id', 'desc')
             ->select(['id', 'message_id', 'date', 'subject', 'to', 'from', 'status', 'unidade'])
