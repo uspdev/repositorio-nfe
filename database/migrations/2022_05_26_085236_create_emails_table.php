@@ -17,7 +17,7 @@ class CreateEmailsTable extends Migration
             $table->id();
             $table->string('message_id');
             $table->datetime('date');
-            $table->string('subject', 512);
+            $table->string('subject', 512)->nullable();
             $table->string('to', 1024);
             $table->string('from', 512);
             $table->text('raw_header')->nullable();
