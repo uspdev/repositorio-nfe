@@ -11,7 +11,7 @@ $menu = [
         'can' => 'manager',
     ],
     [
-        'text' => 'Emails',
+        'text' => '<span class="text-danger">Emails</span>',
         'url' => 'emails',
         'can' => 'admin',
     ],

@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "e7b97dd6a2ce0c91e5f5151eefa43e6e",
+    "content-hash": "dab4a336814106a7867380243364d390",
     "packages": [
         {
             "name": "asm89/stack-cors",
@@ -6708,11 +6708,17 @@
         },
         {
             "name": "uspdev/nfe-ws-consumer",
-            "version": "dev-master",
-            "dist": {
-                "type": "path",
-                "url": "../nfe-ws-consumer",
+            "version": "0.2.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/uspdev/nfe-ws-consumer.git",
                 "reference": "dbd25ba8005e7ceb8430a6aeda7b20ca9880df81"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/uspdev/nfe-ws-consumer/zipball/dbd25ba8005e7ceb8430a6aeda7b20ca9880df81",
+                "reference": "dbd25ba8005e7ceb8430a6aeda7b20ca9880df81",
+                "shasum": ""
             },
             "require": {
                 "ext-curl": "*",
@@ -6724,6 +6730,7 @@
                     "Uspdev\\Nfe\\": "src/"
                 }
             },
+            "notification-url": "https://packagist.org/downloads/",
             "license": [
                 "GPL-2.0-or-later"
             ],
@@ -6734,9 +6741,11 @@
                 }
             ],
             "description": "API para consumir dados de uspdev/nfe-ws",
-            "transport-options": {
-                "relative": true
-            }
+            "support": {
+                "issues": "https://github.com/uspdev/nfe-ws-consumer/issues",
+                "source": "https://github.com/uspdev/nfe-ws-consumer/tree/0.2.0"
+            },
+            "time": "2022-11-22T10:58:50+00:00"
         },
         {
             "name": "uspdev/replicado",
@@ -9507,9 +9516,7 @@
     ],
     "aliases": [],
     "minimum-stability": "dev",
-    "stability-flags": {
-        "uspdev/nfe-ws-consumer": 20
-    },
+    "stability-flags": [],
     "prefer-stable": true,
     "prefer-lowest": false,
     "platform": {
