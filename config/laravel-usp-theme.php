@@ -1,40 +1,5 @@
 <?php
 
-$admin = [
-    [
-        'text' => '<i class="fas fa-atom"></i>  SubItem 1',
-        'url' => 'subitem1',
-    ],
-    [
-        'text' => 'SubItem 2',
-        'url' =>  '/subitem2',
-        'can' => 'admin',
-    ],
-    [
-        'type' => 'divider',
-    ],
-    [
-        'type' => 'header',
-        'text' => 'Cabeçalho',
-    ],
-    [
-        'text' => 'SubItem 3',
-        'url' => 'subitem3',
-    ],
-];
-
-$submenu2 = [
-    [
-        'text' => 'SubItem 1',
-        'url' => 'subitem1',
-    ],
-    [
-        'text' => 'SubItem 2',
-        'url' => 'subitem2',
-        'can' => 'admin',
-    ],
-];
-
 $menu = [
     [
         # este item de menu será substituido no momento da renderização
@@ -43,30 +8,26 @@ $menu = [
     [
         'text' => 'NFEs',
         'url' => 'nfes',
+        'can' => 'manager',
     ],
     [
         'text' => 'Emails',
         'url' => 'emails',
-        'can' => '',
+        'can' => 'admin',
     ],
     [
         'text' => 'Status',
-        'url' => 'nfews-status', 
-        'can' => '',
+        'url' => 'nfews-status',
+        'can' => 'manager',
     ]
 ];
 
 $right_menu = [
     [
-        // menu utilizado para views da biblioteca senhaunica-socialite.
         'key' => 'senhaunica-socialite',
     ],
-    [
-        'text' => '<i class="fas fa-cog"></i>',
-        'title' => 'Configurações',
-        'target' => '_blank',
-        'url' => config('app.url') . '/item1',
-        'align' => 'right',
+        [
+        'key' => 'laravel-tools',
     ],
 ];
 
@@ -76,7 +37,7 @@ return [
     # valor pode ser substituido pela aplicação.
     'title' => config('app.name'),
 
-    # USP_THEME_SKIN deve ser colocado no .env da aplicação 
+    # USP_THEME_SKIN deve ser colocado no .env da aplicação
     'skin' => env('USP_THEME_SKIN', 'uspdev'),
 
     # chave da sessão. Troque em caso de colisão com outra variável de sessão.
@@ -94,4 +55,11 @@ return [
     # menus
     'menu' => $menu,
     'right_menu' => $right_menu,
+
+    # mensagens flash - https://uspdev.github.io/laravel#31-mensagens-flash
+    'mensagensFlash' => true,
+
+    # container ou container-fluid
+    'container' => 'container-fluid',
+
 ];
