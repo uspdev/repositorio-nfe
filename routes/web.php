@@ -15,20 +15,25 @@ use App\Http\Controllers\EmailController;
 |
 */
 
-Route::get('/', function(){
+Route::get('/', function () {
     return view('index');
 });
 
-Route::get('/nfews-status', function(){
-    return view('nfews-status', ['status'=>App\Services\Nfews::getInstance()->status()]);
-    
+Route::middleware(['auth', 'can:manager'])->group(function () {
+    Route::get('/nfews-status', function () {
+        \UspTheme::activeUrl('nfews-status');
+        return view('nfews-status', ['status' => App\Services\Nfews::getInstance()->status()]);
+    });
+
+    Route::get('nfes/{nfe}/xml', [NfeController::class, 'xmlDownload']);
+    Route::get('nfes/{nfe}/danfe', [NfeController::class, 'danfeDownload']);
+    Route::get('nfes/{nfe}/sefaz', [NfeController::class, 'sefazDownload']);
+
+    Route::resource('nfes', NfeController::class);
 });
 
-Route::get('nfes/{nfe}/xml', [NfeController::class, 'xmlDownload']);
-Route::get('nfes/{nfe}/danfe', [NfeController::class, 'danfeDownload']);
-Route::get('nfes/{nfe}/sefaz', [NfeController::class, 'sefazDownload']);
-Route::resource('nfes', NfeController::class);
-
-Route::get('emails/verificarNovos', [EmailController::class, 'verificarNovos']);
-Route::get('emails/{email}/parse', [EmailController::class, 'parse']);
-Route::resource('emails', EmailController::class);
+Route::middleware(['auth', 'can:admin'])->group(function () {
+    Route::get('emails/verificarNovos', [EmailController::class, 'verificarNovos']);
+    Route::get('emails/{email}/parse', [EmailController::class, 'parse']);
+    Route::resource('emails', EmailController::class);
+});
