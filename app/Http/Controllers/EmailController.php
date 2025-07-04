@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Nfe;
 use App\Models\Email;
 use App\Imap\Messages;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Session;
 use App\Http\Requests\StoreEmailRequest;
 use App\Http\Requests\UpdateEmailRequest;
@@ -29,9 +30,15 @@ class EmailController extends Controller
 
     public function verificarNovos()
     {
-        $ret = Email::verificarNovos();
-        Nfe::parsearNovosEmails();
-        Session::flash('alert-info', 'Encontradas ' . $ret['newMessages'] . ' novas mensagens!');
+        $emailMsg = Email::verificarNovos();
+        $msgEmail = 'desde: ' . $emailMsg['lastMessageDate'] . ', baixados: ' . $emailMsg['totalMessages'] . ', novos: ' . $emailMsg['newMessages'];
+
+        $nfeMsg = Nfe::parsearNovosEmails();
+        $msgNfe = 'novos emails: ' . $nfeMsg['novosEmails'] . ', novas Nfes: ' . $nfeMsg['novasNfes'];
+
+        Log::channel('imapCron')->notice('rodou manual', ['email' => $msgEmail, 'nfe' => $msgNfe]);
+
+        Session::flash('alert-info', 'Novos emails: ' . $emailMsg['newMessages'] . ', novas NFEs: ' . $nfeMsg['novasNfes']);
         return back();
     }
 

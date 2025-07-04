@@ -35,7 +35,7 @@ class Email extends Model
 
     /**
      * Retorna a data de criação do ultimo email persistido
-     * 
+     *
      * Se for uma instalação nova retorna os últimos $sub dias
      */
     public static function obterDataUltimoEmail()
@@ -47,7 +47,7 @@ class Email extends Model
 
     /**
      * Consulta servidor imap por novos emails e guarda
-     * 
+     *
      * Agendado para rodar de hora em hora no app\console\kernel.php
      */
     public static function verificarNovos()
@@ -55,25 +55,27 @@ class Email extends Model
         $lastMessageDate = SELF::obterDataUltimoEmail();
         $messages = Imap::getMessagesSince($lastMessageDate);
         $count = 0;
+        // dd($messages);
         foreach ($messages as $message) {
             Email::guardarNovo($message) && $count++;
         }
 
-        // vamos desconectar aqui pois email::guardarNovo tambḿe conecta no imap
+        // vamos desconectar aqui pois email::guardarNovo também conecta no imap
         Imap::disconnect();
         return [
             'lastMessageDate' => $lastMessageDate,
-            'totalMessages' => count($messages),
+            'totalMessages' => $messages->count(),
             'newMessages' => $count,
         ];
     }
 
     /**
      * Guarda uma mensagem que veio pelo imap no banco de dados se já não existir baseado na data e assunto
-     * 
+     *
      * Metodo separado para poder ser chamado pelo IDLE (que não está funcionado direito)
-     * 
+     *
      * @param $message Head do email parseado
+     * @return bool
      */
     public static function guardarNovo($message)
     {
@@ -86,7 +88,13 @@ class Email extends Model
             $email->to = $message->toString;
             $email->from = mb_decode_mimeheader($message->headers->fromaddress);
             $email->raw_header = $message->headersRaw;
-            $email->raw_body = Imap::getMailbox()->getRawMail($message->id);
+
+            // paleativamente limitando o tamanho em 10 MB
+            // if (($size = $message->getSize() / (1024 * 1024)) > 10) {
+                // $email->raw_body = $message->textPlain ?? $message->textHtml;
+            // } else {
+                $email->raw_body = Imap::getMailbox()->getRawMail($message->id);
+            // }
 
             $email->status = ['parsed' => false];
             $email->unidade = SELF::obterUnidade($email->raw_header);
@@ -134,7 +142,7 @@ class Email extends Model
 
     /**
      * Se não converter para utf8 dá erro em alguns emails
-     * 
+     *
      * Isso já acontecia no gerenciador-nfe antigo
      */
     public function setRawBodyAttribute($value)

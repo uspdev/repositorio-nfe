@@ -33,7 +33,7 @@
             {{ formatarCnpjCpf($nfe->emit['cnpj']) }}
         </td>
         <td>
-          <span>({{ formatarCnpjCpf($nfe->emit['cnpj']) }}) {{ $nfe->emit['nome'] }}</span>
+          <span>{{ $nfe->emit['nome'] }}</span>
         </td>
         <td>
           <span title="CPF/CNPJ: {{ formatarCnpjCpf($nfe->dest['cnpj']) }}">{{ $nfe->dest['nome'] }}</span>

@@ -4,8 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Nfe;
 use App\Services\Nfews;
-use App\Http\Requests\StoreNfeRequest;
-use App\Http\Requests\UpdateNfeRequest;
+use Illuminate\Http\Request;
 
 class NfeController extends Controller
 {
@@ -14,12 +13,17 @@ class NfeController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function index()
+    public function index(Request $request)
     {
         \UspTheme::activeUrl('nfes');
 
-        $nfes = Nfe::orderBy('created_at', 'desc')->get();
-        return view('nfes.index', compact('nfes'));
+        $anoCtl = [
+            'atual' => $request->ano ?? now()->year,
+            'anos' => range(now()->year, 2020),
+        ];
+        $nfes = Nfe::where('ano', $anoCtl['atual'])->orderBy('ide->dataemi', 'desc')->get();
+        $dtSlot = view('partials.dt-slot')->with(compact('anoCtl'))->render();
+        return view('nfes.index', compact('nfes', 'anoCtl', 'dtSlot'));
     }
 
     /**

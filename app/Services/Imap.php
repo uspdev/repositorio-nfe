@@ -36,14 +36,14 @@ class Imap
 
 	/**
 	 * Retorna mensagens desde $datetime
-	 * 
+	 *
 	 * @param \Datetime $datetime
 	 * @return Collection
 	 */
 	public static function getMessagesSince(\Datetime $datetime)
 	{
 		$mailbox = SELF::getMailbox();
-		$mailIds = $mailbox->searchMailbox('SINCE "' . $datetime->format('Ymd') . '"');
+		$mailIds = $mailbox->searchMailbox('UNSEEN SINCE "' . $datetime->format('Ymd') . '"');
 		$messages = collect();
 		foreach ($mailIds as $mailId) {
 			$head = $mailbox->getMailHeader($mailId);

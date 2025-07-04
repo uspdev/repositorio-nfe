@@ -41,7 +41,7 @@ apt install php-mailparse
 Configuração do supervisor
 
     [program:repositorio-nfe-imap-idle]
-    command=/usr/bin/php /home/kawabata/git/uspdev/repositorio-nfe/artisan imap:idle
+    command=/usr/bin/php /home/kawabata/git/uspdev/repositorio-nfe/artisan emails:receive
     process_num=1
     user=kawabata
     numprocs=1

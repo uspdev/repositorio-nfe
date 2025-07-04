@@ -15,7 +15,7 @@ class Kernel extends ConsoleKernel
      */
     protected function schedule(Schedule $schedule)
     {
-        $schedule->command('emails:receive')->weekdays()->hourly()->between('6:00', '22:00');;
+        $schedule->command('emails:receive')->weekdays()->hourly()->between('6:00', '22:00');
     }
 
     /**
