@@ -16,6 +16,11 @@ $menu = [
         'can' => 'admin',
     ],
     [
+        'text' => '<span class="text-danger">Estatísticas</span>',
+        'url' => 'estatisticas',
+        'can' => 'admin',
+    ],
+    [
         'text' => 'Status',
         'url' => 'nfews-status',
         'can' => 'manager',
@@ -26,7 +31,7 @@ $right_menu = [
     [
         'key' => 'senhaunica-socialite',
     ],
-        [
+    [
         'key' => 'laravel-tools',
     ],
 ];

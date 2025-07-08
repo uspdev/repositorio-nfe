@@ -36,4 +36,6 @@ Route::middleware(['auth', 'can:admin'])->group(function () {
     Route::get('emails/verificarNovos', [EmailController::class, 'verificarNovos']);
     Route::get('emails/{email}/parse', [EmailController::class, 'parse']);
     Route::resource('emails', EmailController::class);
+
+    Route::get('estatisticas', [NfeController::class, 'estatisticas']);
 });
