@@ -39,6 +39,8 @@ class NfeController extends Controller
     {
         $filename = $nfe->chave . '-procNFe.xml';
         return response()->streamDownload(function () use ($nfe) {
+            ob_clean();
+            flush();
             echo $nfe->xml;
         }, $filename, ['content-type' => 'text/xml']);
     }
