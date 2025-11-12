@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Services\Imap;
+use Illuminate\Support\Carbon;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 
@@ -79,11 +80,21 @@ class Email extends Model
      */
     public static function guardarNovo($message)
     {
-        // verificando repoetidos por data e assunto
-        if (Email::where('date', $message->date)->where('subject', $message->subject)->doesntExist()) {
+        // Limpa a string da data, removendo qualquer "(...)" no final
+        // Failed to parse time string (Thu, 9 Oct 2025 14:19:01 -0300 (-03)) at position 32
+        $dateString = preg_replace('/\s*\(.*\)$/', '', $message->date ?? '');
+        try {
+            $parsedDate = Carbon::parse($dateString);
+        } catch (\Exception $e) {
+            // fallback se ainda assim falhar
+            $parsedDate = now();
+        }
+
+        // verificando repetidos por data e assunto
+        if (Email::where('date', $parsedDate)->where('subject', $message->subject)->doesntExist()) {
             $email = new Email;
             $email->message_id = $message->messageId;
-            $email->date = $message->date;
+            $email->date = $parsedDate;
             $email->subject = $message->subject;
             $email->to = $message->toString;
             $email->from = mb_decode_mimeheader($message->headers->fromaddress);
@@ -91,9 +102,9 @@ class Email extends Model
 
             // paleativamente limitando o tamanho em 10 MB
             // if (($size = $message->getSize() / (1024 * 1024)) > 10) {
-                // $email->raw_body = $message->textPlain ?? $message->textHtml;
+            // $email->raw_body = $message->textPlain ?? $message->textHtml;
             // } else {
-                $email->raw_body = Imap::getMailbox()->getRawMail($message->id);
+            $email->raw_body = Imap::getMailbox()->getRawMail($message->id);
             // }
 
             $email->status = ['parsed' => false];
