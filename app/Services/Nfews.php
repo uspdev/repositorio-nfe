@@ -2,7 +2,7 @@
 
 namespace App\Services;
 
-use \Uspdev\Nfe\NfeWsConsumer;
+use Uspdev\Nfe\NfeWsConsumer;
 
 class Nfews extends NfeWsConsumer
 {
@@ -10,9 +10,14 @@ class Nfews extends NfeWsConsumer
 
     public static function getInstance()
     {
-        if (SELF::$nfeWsConsumer == null) {
-            SELF::$nfeWsConsumer = new NfeWsConsumer(config('nfe.nfeWs.server'), config('nfe.nfeWs.user'), config('nfe.nfeWs.pwd'));
+        if (self::$nfeWsConsumer == null) {
+            self::$nfeWsConsumer = new NfeWsConsumer(
+                config('nfe.nfeWs.server'),
+                config('nfe.nfeWs.apiKey'),
+                config('nfe.nfeWs.debug', 0),
+                config('nfe.nfeWs.sslVerify', true)
+            );
         }
-        return SELF::$nfeWsConsumer;
+        return self::$nfeWsConsumer;
     }
 }
