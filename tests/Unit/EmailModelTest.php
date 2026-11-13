@@ -102,7 +102,7 @@ class EmailModelTest extends TestCase
         $mailbox->shouldReceive('disconnect')->twice();
         Imap::$mailbox = $mailbox;
 
-        $first = Email::verificarNovos();
+        $first = Imap::verificarNovos();
 
         $this->assertSame(1, $first['totalMessages']);
         $this->assertSame(1, $first['newMessages']);
@@ -114,7 +114,7 @@ class EmailModelTest extends TestCase
         $this->assertSame($rawMail, $stored->raw_body);
 
         Imap::$mailbox = $mailbox;
-        $second = Email::verificarNovos();
+        $second = Imap::verificarNovos();
 
         $this->assertSame(1, $second['totalMessages']);
         $this->assertSame(0, $second['newMessages']);

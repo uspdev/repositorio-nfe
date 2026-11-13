@@ -1,6 +1,5 @@
 <?php
 
-use App\Models\Nfe;
 use App\Models\Email;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Foundation\Inspiring;
@@ -24,7 +23,7 @@ Artisan::command('inspire', function () {
 
 Artisan::command('emails:receive', function () {
 
-    $ret = Email::verificarNovos();
+    $ret = \App\Services\Imap::verificarNovos();
     $msgEmail = 'desde: ' . $ret['lastMessageDate'] . ', baixados: ' . $ret['totalMessages'] . ', novos: ' . $ret['newMessages'];
 
     $ret = Email::parsearNovos();

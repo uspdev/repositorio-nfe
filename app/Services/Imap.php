@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Models\Email;
 use PhpImap\Mailbox;
 
 class Imap
@@ -50,5 +51,37 @@ class Imap
 			$messages[] = $head;
 		}
 		return $messages;
+	}
+
+	/**
+	 * Retorna o conteúdo bruto (raw) de um e-mail pelo ID da caixa IMAP.
+	 */
+	public static function getRawMail(int $mailId): string
+	{
+		return (string) self::getMailbox()->getRawMail($mailId);
+	}
+
+	/**
+	 * Consulta o servidor IMAP por novos e-mails e os armazena no banco de dados.
+	 *
+	 * @return array{lastMessageDate: \Illuminate\Support\Carbon, totalMessages: int, newMessages: int}
+	 */
+	public static function verificarNovos(): array
+	{
+		$lastMessageDate = Email::obterDataUltimoEmail();
+		$messages = self::getMessagesSince($lastMessageDate);
+		$count = 0;
+
+		foreach ($messages as $message) {
+			Email::guardarNovo($message) && $count++;
+		}
+
+		self::disconnect();
+
+		return [
+			'lastMessageDate' => $lastMessageDate,
+			'totalMessages' => $messages->count(),
+			'newMessages' => $count,
+		];
 	}
 }

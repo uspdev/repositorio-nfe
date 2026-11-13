@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Email;
+use App\Services\Imap;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Session;
 
@@ -27,7 +28,7 @@ class EmailController extends Controller
      */
     public function verificarNovos()
     {
-        $emailMsg = Email::verificarNovos();
+        $emailMsg = Imap::verificarNovos();
         $msgEmail = 'desde: ' . $emailMsg['lastMessageDate'] . ', baixados: ' . $emailMsg['totalMessages'] . ', novos: ' . $emailMsg['newMessages'];
 
         $nfeMsg = Email::parsearNovos();

@@ -58,32 +58,6 @@ class Email extends Model
     }
 
     /**
-     * Consulta servidor IMAP por novos e-mails e os armazena no banco de dados.
-     *
-     * Agendado para rodar de hora em hora no app\console\kernel.php.
-     *
-     * @return array{lastMessageDate: \Illuminate\Support\Carbon, totalMessages: int, newMessages: int}
-     */
-    public static function verificarNovos()
-    {
-        $lastMessageDate = SELF::obterDataUltimoEmail();
-        $messages = Imap::getMessagesSince($lastMessageDate);
-        $count = 0;
-        // dd($messages);
-        foreach ($messages as $message) {
-            Email::guardarNovo($message) && $count++;
-        }
-
-        // vamos desconectar aqui pois email::guardarNovo também conecta no imap
-        Imap::disconnect();
-        return [
-            'lastMessageDate' => $lastMessageDate,
-            'totalMessages' => $messages->count(),
-            'newMessages' => $count,
-        ];
-    }
-
-    /**
      * Guarda uma mensagem que veio pelo imap no banco de dados se já não existir baseado na data e assunto
      *
      * Metodo separado para poder ser chamado pelo IDLE (que não está funcionado direito)
@@ -117,7 +91,7 @@ class Email extends Model
             // if (($size = $message->getSize() / (1024 * 1024)) > 10) {
             // $email->raw_body = $message->textPlain ?? $message->textHtml;
             // } else {
-            $email->raw_body = Imap::getMailbox()->getRawMail($message->id);
+            $email->raw_body = Imap::getRawMail($message->id);
             // }
 
             $email->status = ['parsed' => false];
