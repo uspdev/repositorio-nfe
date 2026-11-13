@@ -1,7 +1,7 @@
 @extends('layouts.app')
 
 @section('content')
-  <div class="h3">Emails <span class="badge badge-pill badge-primary">{{ count($emails) }}</span> | <a
+  <div class="h3">Emails <span class="badge badge-pill badge-primary">{{ $emails->total() }}</span> | <a
       href="emails/verificarNovos">Verificar novos</a></div>
 
   <table class="table table-bordered table-sm table-stripped table-hover datatable-simples">
@@ -37,4 +37,8 @@
       @endforeach
     </tbody>
   </table>
+
+  <div class="mt-3">
+    {{ $emails->links() }}
+  </div>
 @endsection
