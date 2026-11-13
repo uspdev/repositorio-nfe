@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Requests\StoreNfeRequest;
 use App\Http\Requests\UpdateNfeRequest;
 use App\Models\Nfe;
+use App\Services\NfeEstatisticasService;
 use App\Services\Nfews;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -180,81 +181,13 @@ class NfeController extends Controller
     /**
      * Coleta estatísticas de destinatátio e remtente e mostra em listas
      */
-    public function estatisticas()
+    public function estatisticas(NfeEstatisticasService $estatisticasService)
     {
         \UspTheme::activeUrl('estatisticas');
 
-        $anos = request('anos', []);
-        if (!isset($anos[0])) {
-            $anos[0] = now()->year - 5; // ano inicial;
-        }
-        if (!isset($anos[1]) || $anos[1] < $anos[0]) {
-            $anos[1] = now()->year; // ano final
-        }
-        // $anos = '*';
+        $dados = $estatisticasService->gerar(request('anos', []));
 
-        $nfes = Nfe::when($anos === '*', function ($query) {
-            // pega todos
-            return $query;
-        })
-            ->when(is_array($anos), function ($query) use ($anos) {
-                // pega intervalo de anos
-                return $query->whereBetween('ano', [$anos[0], $anos[1]]);
-            })
-            ->orderByRaw("JSON_UNQUOTE(JSON_EXTRACT(ide, '$.dataemi')) DESC")
-            ->get();
-
-        $totaisPorEmit = $nfes
-            ->filter(function ($nfe) {
-                $xml = simplexml_load_string($nfe->xml);
-                if (!$xml || !isset($xml->NFe->infNFe->ide)) {
-                    return false;
-                }
-
-                $natOp  = strtoupper((string) $xml->NFe->infNFe->ide->natOp);
-                $finNFe = (string) $xml->NFe->infNFe->ide->finNFe;
-
-                return $finNFe === '1' && str_contains($natOp, 'VENDA');
-            })
-            ->groupBy('emit.cnpj')
-            ->map(function ($grupo, $cnpj) {
-                $nome = collect($grupo)->pluck('emit.nome')->first() ?? '(sem nome)';
-                return [
-                    'cnpj' => $cnpj,
-                    'nome' => $nome,
-                    'total' => $grupo->sum(fn($nfe) => (float) ($nfe->ide['total'] ?? 0)),
-                    'quantidade' => $grupo->count(),
-                ];
-            })
-            ->sortByDesc('total')
-            ->values();
-
-        $totaisPorDest = $nfes
-            ->filter(function ($nfe) {
-                $xml = simplexml_load_string($nfe->xml);
-                if (!$xml || !isset($xml->NFe->infNFe->ide)) {
-                    return false;
-                }
-
-                $natOp  = strtoupper((string) $xml->NFe->infNFe->ide->natOp);
-                $finNFe = (string) $xml->NFe->infNFe->ide->finNFe;
-
-                return $finNFe === '1' && str_contains($natOp, 'VENDA');
-            })
-            ->groupBy('dest.cnpj') // agrupando por destinatário
-            ->map(function ($grupo, $cnpj) {
-                $nome = collect($grupo)->pluck('dest.nome')->first() ?? '(sem nome)';
-                return [
-                    'cnpj'       => $cnpj,
-                    'nome'       => $nome,
-                    'total'      => $grupo->sum(fn($nfe) => (float) ($nfe->ide['total'] ?? 0)),
-                    'quantidade' => $grupo->count(),
-                ];
-            })
-            ->sortByDesc('total')
-            ->values();
-
-        return view('nfes.estatisticas', compact('totaisPorEmit', 'totaisPorDest', 'anos'));
+        return view('nfes.estatisticas', $dados);
     }
 
     /**

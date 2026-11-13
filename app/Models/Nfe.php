@@ -31,14 +31,12 @@ class Nfe extends Model
     ];
 
     /**
-     * Extrai a lista de produtos/serviços do XML da NF-e.
-     *
-     * @return array<int, array{item: string, codigo: string, descricao: string, ncm: string, cfop: string, unidade: string, quantidade: float, valor_unitario: float, valor_total: float, info_adicional: string}>
+     * Faz o parse seguro do XML da NF-e.
      */
-    public function listarProdutos(): array
+    private function parseXml(): ?\SimpleXMLElement
     {
         if (empty($this->xml)) {
-            return [];
+            return null;
         }
 
         $prevUseErrors = libxml_use_internal_errors(true);
@@ -46,6 +44,33 @@ class Nfe extends Model
         libxml_clear_errors();
         libxml_use_internal_errors($prevUseErrors);
 
+        return $xml ?: null;
+    }
+
+    /**
+     * Indica se a NF-e corresponde a uma operação de venda (finNFe = 1 e natOp contendo VENDA).
+     */
+    public function isVenda(): bool
+    {
+        $xml = $this->parseXml();
+        if (!$xml || !isset($xml->NFe->infNFe->ide)) {
+            return false;
+        }
+
+        $natOp = strtoupper((string) $xml->NFe->infNFe->ide->natOp);
+        $finNFe = (string) $xml->NFe->infNFe->ide->finNFe;
+
+        return $finNFe === '1' && str_contains($natOp, 'VENDA');
+    }
+
+    /**
+     * Extrai a lista de produtos/serviços do XML da NF-e.
+     *
+     * @return array<int, array{item: string, codigo: string, descricao: string, ncm: string, cfop: string, unidade: string, quantidade: float, valor_unitario: float, valor_total: float, info_adicional: string}>
+     */
+    public function listarProdutos(): array
+    {
+        $xml = $this->parseXml();
         if (!$xml) {
             return [];
         }
