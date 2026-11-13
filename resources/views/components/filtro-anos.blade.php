@@ -1,8 +1,13 @@
+@props([
+    'anos' => [],
+    'anoMinimo' => 2000,
+])
+
 <form method="GET" class="form-inline mb-3">
   <span class="mr-2">Período:</span>
   <label for="anos_0" class="mr-2">Ano inicial:</label>
   <select name="anos[]" id="anos_0" class="form-control form-control-sm mr-3">
-    @for ($ano = now()->year; $ano >= 2000; $ano--)
+    @for ($ano = now()->year; $ano >= $anoMinimo; $ano--)
       <option value="{{ $ano }}" {{ $ano == ($anos[0] ?? '') ? 'selected' : '' }}>
         {{ $ano }}
       </option>
@@ -11,7 +16,7 @@
 
   <label for="anos_1" class="mr-2">Ano final:</label>
   <select name="anos[]" id="anos_1" class="form-control form-control-sm mr-3">
-    @for ($ano = now()->year; $ano >= 2000; $ano--)
+    @for ($ano = now()->year; $ano >= $anoMinimo; $ano--)
       <option value="{{ $ano }}" {{ $ano == ($anos[1] ?? '') ? 'selected' : '' }}>
         {{ $ano }}
       </option>
@@ -21,8 +26,7 @@
   <button type="submit" class="btn btn-primary btn-sm">Filtrar</button>
 </form>
 
-@section('javascripts_bottom')
-  @parent
+@push('scripts')
   <script>
     document.addEventListener('DOMContentLoaded', function() {
       const anoInicial = document.getElementById('anos_0');
@@ -33,16 +37,11 @@
 
         Array.from(anoFinal.options).forEach(option => {
           const ano = parseInt(option.value);
-          if (ano < inicial) {
-            option.hidden = true;
-          } else {
-            option.hidden = false;
-          }
+          option.hidden = ano < inicial;
         });
 
         // Corrige valor se ano final atual estiver fora do intervalo
         if (parseInt(anoFinal.value) < inicial) {
-          // Seleciona o primeiro ano final visível
           for (const option of anoFinal.options) {
             if (!option.hidden) {
               anoFinal.value = option.value;
@@ -53,7 +52,7 @@
       }
 
       anoInicial.addEventListener('change', filtrarAnosFinais);
-      filtrarAnosFinais(); // Executa ao carregar
+      filtrarAnosFinais();
     });
   </script>
-@endsection
+@endpush

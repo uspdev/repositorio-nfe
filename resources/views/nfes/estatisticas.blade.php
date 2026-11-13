@@ -7,7 +7,7 @@
     &nbsp; natOp contém "VENDA"
   </div>
 
-  @include('nfes.partials.filtro-anos')
+  <x-filtro-anos :anos="$anos" />
 
   <div class="h3">Estatisticas emitente</div>
 
