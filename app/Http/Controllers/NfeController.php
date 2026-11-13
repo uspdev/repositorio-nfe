@@ -8,16 +8,13 @@ use App\Models\Nfe;
 use App\Services\NfeEstatisticasService;
 use App\Services\Nfews;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 
 class NfeController extends Controller
 {
     /**
-     * Display a listing of the resource.
+     * Lista as NF-es do ano selecionado ordenadas pela data de emissão.
      *
-     * O orderby RAW implica em mariadb. não testado em mysql ou outro
-     *
-     * @return \Illuminate\Http\Response
+     * O orderByRaw assume MariaDB/MySQL (não testado em outros SGBDs).
      */
     public function index(Request $request)
     {
@@ -90,9 +87,7 @@ class NfeController extends Controller
     }
 
     /**
-     * Show the form for creating a new resource.
-     *
-     * @return \Illuminate\Http\Response
+     * Exibe o formulário para envio manual de arquivo XML de NF-e.
      */
     public function create()
     {
@@ -101,10 +96,7 @@ class NfeController extends Controller
     }
 
     /**
-     * Store a newly created resource in storage.
-     *
-     * @param  \App\Http\Requests\StoreNfeRequest  $request
-     * @return \Illuminate\Http\Response
+     * Valida e importa o XML enviado manualmente via webservice nfe-ws.
      */
     public function store(StoreNfeRequest $request)
     {
@@ -129,10 +121,7 @@ class NfeController extends Controller
     }
 
     /**
-     * Display the specified resource.
-     *
-     * @param  \App\Models\Nfe  $nfe
-     * @return \Illuminate\Http\Response
+     * Exibe os detalhes da NF-e e a lista de produtos extraída do XML.
      */
     public function show(Nfe $nfe)
     {
@@ -141,22 +130,7 @@ class NfeController extends Controller
     }
 
     /**
-     * Show the form for editing the specified resource.
-     *
-     * @param  \App\Models\Nfe  $nfe
-     * @return \Illuminate\Http\Response
-     */
-    public function edit(Nfe $nfe)
-    {
-        //
-    }
-
-    /**
-     * Update the specified resource in storage.
-     *
-     * @param  \App\Http\Requests\UpdateNfeRequest  $request
-     * @param  \App\Models\Nfe  $nfe
-     * @return \Illuminate\Http\Response
+     * Atualiza a unidade associada à NF-e.
      */
     public function update(UpdateNfeRequest $request, Nfe $nfe)
     {
@@ -168,18 +142,7 @@ class NfeController extends Controller
     }
 
     /**
-     * Remove the specified resource from storage.
-     *
-     * @param  \App\Models\Nfe  $nfe
-     * @return \Illuminate\Http\Response
-     */
-    public function destroy(Nfe $nfe)
-    {
-        //
-    }
-
-    /**
-     * Coleta estatísticas de destinatátio e remtente e mostra em listas
+     * Coleta estatísticas de emitente e destinatário para notas de venda no período.
      */
     public function estatisticas(NfeEstatisticasService $estatisticasService)
     {

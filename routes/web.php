@@ -25,7 +25,7 @@ Route::middleware(['auth', 'can:admin'])->group(function () {
 
     Route::get('emails/verificarNovos', [EmailController::class, 'verificarNovos']);
     Route::get('emails/{email}/parse', [EmailController::class, 'parse']);
-    Route::resource('emails', EmailController::class);
+    Route::resource('emails', EmailController::class)->only(['index']);
 
     Route::get('estatisticas', [NfeController::class, 'estatisticas']);
 });
@@ -36,5 +36,5 @@ Route::middleware(['auth', 'can:manager'])->group(function () {
     Route::get('nfes/{nfe}/danfe', [NfeController::class, 'danfeDownload']);
     Route::get('nfes/{nfe}/sefaz', [NfeController::class, 'sefazDownload']);
 
-    Route::resource('nfes', NfeController::class)->except(['create', 'store']);
+    Route::resource('nfes', NfeController::class)->only(['index', 'show', 'update']);
 });

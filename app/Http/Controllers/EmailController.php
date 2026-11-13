@@ -2,20 +2,14 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Nfe;
 use App\Models\Email;
-use App\Imap\Messages;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Session;
-use App\Http\Requests\StoreEmailRequest;
-use App\Http\Requests\UpdateEmailRequest;
 
 class EmailController extends Controller
 {
     /**
-     * Display a listing of the resource.
-     *
-     * @return \Illuminate\Http\Response
+     * Lista os e-mails recebidos em ordem decrescente com paginação.
      */
     public function index()
     {
@@ -28,6 +22,9 @@ class EmailController extends Controller
         return view('emails.index', compact('emails'));
     }
 
+    /**
+     * Verifica novos e-mails via IMAP e processa os XMLs de NF-e anexados.
+     */
     public function verificarNovos()
     {
         $emailMsg = Email::verificarNovos();
@@ -42,77 +39,14 @@ class EmailController extends Controller
         return back();
     }
 
+    /**
+     * Reprocessa os anexos de um e-mail específico em busca de NF-es.
+     */
     public function parse(Email $email)
     {
         $ret = $email->parsear();
 
         Session::flash('alert-info', ' novas Nfes: ' . $ret['newNfes'] . ', anexos: '  . count($ret['attachments']));
         return back();
-    }
-
-    /**
-     * Show the form for creating a new resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function create()
-    {
-        //
-    }
-
-    /**
-     * Store a newly created resource in storage.
-     *
-     * @param  \App\Http\Requests\StoreEmailRequest  $request
-     * @return \Illuminate\Http\Response
-     */
-    public function store(StoreEmailRequest $request)
-    {
-        //
-    }
-
-    /**
-     * Display the specified resource.
-     *
-     * @param  \App\Models\Email  $email
-     * @return \Illuminate\Http\Response
-     */
-    public function show(Email $email)
-    {
-        //
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     *
-     * @param  \App\Models\Email  $email
-     * @return \Illuminate\Http\Response
-     */
-    public function edit(Email $email)
-    {
-        //
-    }
-
-    /**
-     * Update the specified resource in storage.
-     *
-     * @param  \App\Http\Requests\UpdateEmailRequest  $request
-     * @param  \App\Models\Email  $email
-     * @return \Illuminate\Http\Response
-     */
-    public function update(UpdateEmailRequest $request, Email $email)
-    {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     *
-     * @param  \App\Models\Email  $email
-     * @return \Illuminate\Http\Response
-     */
-    public function destroy(Email $email)
-    {
-        //
     }
 }
