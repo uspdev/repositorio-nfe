@@ -43,4 +43,36 @@ class User extends Authenticatable
     protected $casts = [
         'email_verified_at' => 'datetime',
     ];
+
+    /**
+     * Obtém a sigla da unidade principal do usuário via Replicado (máximo 10 caracteres).
+     */
+    public function obterSiglaUnidade(): ?string
+    {
+        if (empty($this->codpes) || !class_exists(\Uspdev\Replicado\Pessoa::class)) {
+            return null;
+        }
+
+        try {
+            $vinculos = \Uspdev\Replicado\Pessoa::listarVinculosAtivos((int) $this->codpes, false);
+            foreach ($vinculos as $vinculo) {
+                $sigla = trim((string) ($vinculo['sglund'] ?? $vinculo['sglclg'] ?? ''));
+                if ($sigla !== '') {
+                    return substr($sigla, 0, 10);
+                }
+
+                if (!empty($vinculo['codundclg']) && class_exists(\Uspdev\Replicado\Estrutura::class)) {
+                    $und = \Uspdev\Replicado\Estrutura::obterUnidade((int) $vinculo['codundclg']);
+                    $sigla = trim((string) ($und['sglund'] ?? ''));
+                    if ($sigla !== '') {
+                        return substr($sigla, 0, 10);
+                    }
+                }
+            }
+        } catch (\Throwable $e) {
+            // Caso o Replicado esteja indisponível, retorna null sem interromper o fluxo
+        }
+
+        return null;
+    }
 }

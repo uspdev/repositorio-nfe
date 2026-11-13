@@ -13,7 +13,7 @@ class UpdateNfeRequest extends FormRequest
      */
     public function authorize()
     {
-        return false;
+        return $this->user()?->can('admin') ?? false;
     }
 
     /**
@@ -24,7 +24,19 @@ class UpdateNfeRequest extends FormRequest
     public function rules()
     {
         return [
-            //
+            'unidade' => ['nullable', 'string', 'max:10'],
+        ];
+    }
+
+    /**
+     * Custom validation messages.
+     *
+     * @return array
+     */
+    public function messages()
+    {
+        return [
+            'unidade.max' => 'A unidade deve ter no máximo 10 caracteres.',
         ];
     }
 }

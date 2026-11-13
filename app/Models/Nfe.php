@@ -3,7 +3,6 @@
 namespace App\Models;
 
 use App\Services\Nfews;
-use PhpMimeMailParser\Parser;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 
@@ -31,90 +30,120 @@ class Nfe extends Model
         'consulta' => 'array',
     ];
 
-
-    public static function parsearNovosEmails()
-    {
-        $emails = Email::where('status->parsed', false)->get();
-
-        $countNfes = 0;
-        foreach ($emails as $email) {
-            $p = SELF::parsearEmail($email);
-            $countNfes += $p['newNfes'];
-        }
-        return [
-            'novosEmails' => count($emails),
-            'novasNfes' => $countNfes,
-        ];
-    }
-
     /**
-     * Parseia o email em busca de anexos e nfes
+     * Extrai a lista de produtos/serviços do XML da NF-e.
      *
-     * @param App\Models\Email $email
+     * @return array<int, array{item: string, codigo: string, descricao: string, ncm: string, cfop: string, unidade: string, quantidade: float, valor_unitario: float, valor_total: float, info_adicional: string}>
      */
-    public static function parsearEmail(Email $email)
+    public function listarProdutos(): array
     {
-        $anexos = SELF::listarAnexos($email->raw_header . $email->raw_body);
-        $nfeCount = 0;
-        $attachments = [];
-        foreach ($anexos as $anexo) {
-            $consulta = [];
-            $content = $anexo->getContent();
-            if (strtolower(substr($anexo->getFilename(), -3)) == 'xml') {
-                $consulta = Nfews::getInstance()->consultaXML($content);
-                if (isset($consulta['status']) && $consulta['status'] == 'ok') {
-                    if (Nfe::where('chave', $consulta['chave'])->doesntExist()) {
-                        $nfe = new Nfe;
-                        $nfe->chave = $consulta['chave'];
-                        $nfe->xml = $content;
-                        $nfe->prot = $consulta['prot'] ?? [];
-                        $nfe->emit = $consulta['nfe']['emit'];
-                        $nfe->dest = $consulta['nfe']['dest'];
-                        $nfe->ide = $consulta['nfe']['ide'];
-                        $nfe->consulta = $consulta['sefaz'] ?? [];
-                        $nfe->infadic = $consulta['nfe']['infadic'];
-                        $nfe->unidade = Email::obterUnidade($email->raw_header);
-                        $nfe->ano = date_parse($consulta['nfe']['ide']['dataemi'])['year'];
-                        $nfe->email_id = $email->id;
-                        $nfe->save();
-                        $nfeCount++;
-                    }
-                }
+        if (empty($this->xml)) {
+            return [];
+        }
+
+        $prevUseErrors = libxml_use_internal_errors(true);
+        $xml = simplexml_load_string($this->xml);
+        libxml_clear_errors();
+        libxml_use_internal_errors($prevUseErrors);
+
+        if (!$xml) {
+            return [];
+        }
+
+        $infNFe = $xml->NFe->infNFe ?? $xml->infNFe ?? null;
+        if (!$infNFe || !isset($infNFe->det)) {
+            return [];
+        }
+
+        $produtos = [];
+        $idx = 1;
+        foreach ($infNFe->det as $det) {
+            $prod = $det->prod ?? null;
+            if (!$prod) {
+                $idx++;
+                continue;
             }
 
-            // salva no email->status anexos, nome, tamanho
-            $attachment['filename'] = $anexo->getFilename();
-            $attachment['size'] = strlen($content);
-            $attachment['contenttype'] = $anexo->getContentType();
-            $attachment['statusConsulta'] = $consulta['status'] ?? ''; // precisa melhorar isso
-            $attachments[] = $attachment;
+            $produtos[] = [
+                'item' => (string) ($det['nItem'] ?? $idx),
+                'codigo' => (string) ($prod->cProd ?? ''),
+                'descricao' => (string) ($prod->xProd ?? ''),
+                'ncm' => (string) ($prod->NCM ?? ''),
+                'cfop' => (string) ($prod->CFOP ?? ''),
+                'unidade' => (string) ($prod->uCom ?? ''),
+                'quantidade' => (float) ($prod->qCom ?? 0),
+                'valor_unitario' => (float) ($prod->vUnCom ?? 0),
+                'valor_total' => (float) ($prod->vProd ?? 0),
+                'info_adicional' => trim((string) ($det->infAdProd ?? '')),
+            ];
+            $idx++;
         }
 
-        $email->status = [
-            'parsed' => true,
-            'parsedate' => now(),
-            'attachments' => $attachments,
-        ];
-        $email->save();
-
-        return [
-            'newNfes' => $nfeCount,
-            'attachments' => $attachments,
-        ];
+        return $produtos;
     }
 
     /**
-     * Retorna os anexos de um email usando o php-mime-mail-parser
+     * Valida e importa um XML de NF-e via webservice nfe-ws.
      *
-     * @param String $rawEmail
-     * @return collection
+     * @param string $content Conteúdo do arquivo XML
+     * @param string|null $unidade Código da unidade (opcional)
+     * @param int|null $emailId ID do e-mail de origem (opcional)
+     * @return array{status: string, nfe: ?self, message: string, consulta: array}
      */
-    public static function listarAnexos($rawEmail)
+    public static function importarXml(string $content, ?string $unidade = null, ?int $emailId = null): array
     {
-        $parser = new Parser();
-        $parser->setText($rawEmail);
+        $consulta = Nfews::getInstance()->consultaXML($content);
 
-        $attachments = $parser->getAttachments([true]);
-        return $attachments;
+        if (!is_array($consulta)) {
+            return [
+                'status' => 'error',
+                'nfe' => null,
+                'message' => is_string($consulta) && $consulta !== ''
+                    ? $consulta
+                    : 'Falha ao comunicar com o webservice NF-e.',
+                'consulta' => [],
+            ];
+        }
+
+        if (($consulta['status'] ?? '') !== 'ok') {
+            $erro = $consulta['erro'] ?? $consulta['mensagem'] ?? $consulta['message'] ?? 'XML inválido ou rejeitado pelo webservice.';
+            return [
+                'status' => 'error',
+                'nfe' => null,
+                'message' => is_string($erro) ? $erro : json_encode($erro),
+                'consulta' => $consulta,
+            ];
+        }
+
+        $existente = self::where('chave', $consulta['chave'])->first();
+        if ($existente) {
+            return [
+                'status' => 'exists',
+                'nfe' => $existente,
+                'message' => 'Esta NF-e já estava cadastrada no repositório.',
+                'consulta' => $consulta,
+            ];
+        }
+
+        $nfe = new self();
+        $nfe->chave = $consulta['chave'];
+        $nfe->xml = $content;
+        $nfe->prot = $consulta['prot'] ?? [];
+        $nfe->emit = $consulta['nfe']['emit'] ?? [];
+        $nfe->dest = $consulta['nfe']['dest'] ?? [];
+        $nfe->ide = $consulta['nfe']['ide'] ?? [];
+        $nfe->consulta = $consulta['sefaz'] ?? [];
+        $nfe->infadic = $consulta['nfe']['infadic'] ?? '';
+        $nfe->unidade = $unidade;
+        $nfe->ano = date_parse($consulta['nfe']['ide']['dataemi'] ?? '')['year'] ?: now()->year;
+        $nfe->email_id = $emailId;
+        $nfe->save();
+
+        return [
+            'status' => 'created',
+            'nfe' => $nfe,
+            'message' => 'NF-e validada e armazenada com sucesso.',
+            'consulta' => $consulta,
+        ];
     }
 }

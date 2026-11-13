@@ -19,23 +19,25 @@ Route::get('/', function () {
     return view('index');
 });
 
-Route::middleware(['auth', 'can:manager'])->group(function () {
-    Route::get('/nfews-status', function () {
-        \UspTheme::activeUrl('nfews-status');
-        return view('nfews-status', ['status' => App\Services\Nfews::getInstance()->status()]);
-    });
-
-    Route::get('nfes/{nfe}/xml', [NfeController::class, 'xmlDownload']);
-    Route::get('nfes/{nfe}/danfe', [NfeController::class, 'danfeDownload']);
-    Route::get('nfes/{nfe}/sefaz', [NfeController::class, 'sefazDownload']);
-
-    Route::resource('nfes', NfeController::class);
-});
-
 Route::middleware(['auth', 'can:admin'])->group(function () {
+    Route::get('nfes/create', [NfeController::class, 'create'])->name('nfes.create');
+    Route::post('nfes', [NfeController::class, 'store'])->name('nfes.store');
+
     Route::get('emails/verificarNovos', [EmailController::class, 'verificarNovos']);
     Route::get('emails/{email}/parse', [EmailController::class, 'parse']);
     Route::resource('emails', EmailController::class);
 
     Route::get('estatisticas', [NfeController::class, 'estatisticas']);
+});
+
+Route::middleware(['auth', 'can:manager'])->group(function () {
+    Route::get('/nfews-status', function () {
+        \UspTheme::activeUrl('nfews-status');
+        return view('nfews-status', ['status' => App\Services\Nfews::getInstance()->status()]);
+    });
+    Route::get('nfes/{nfe}/xml', [NfeController::class, 'xmlDownload']);
+    Route::get('nfes/{nfe}/danfe', [NfeController::class, 'danfeDownload']);
+    Route::get('nfes/{nfe}/sefaz', [NfeController::class, 'sefazDownload']);
+
+    Route::resource('nfes', NfeController::class)->except(['create', 'store']);
 });

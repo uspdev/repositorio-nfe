@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\StoreNfeRequest;
+use App\Http\Requests\UpdateNfeRequest;
 use App\Models\Nfe;
 use App\Services\Nfews;
 use Illuminate\Http\Request;
@@ -93,7 +95,8 @@ class NfeController extends Controller
      */
     public function create()
     {
-        //
+        \UspTheme::activeUrl('nfes');
+        return view('nfes.create');
     }
 
     /**
@@ -104,7 +107,24 @@ class NfeController extends Controller
      */
     public function store(StoreNfeRequest $request)
     {
-        //
+        $content = file_get_contents($request->file('xml')->getRealPath());
+        if ($content === false || trim($content) === '') {
+            return back()->withInput()->with('alert-danger', 'Não foi possível ler o conteúdo do arquivo XML.');
+        }
+
+        try {
+            $unidade = $request->user()?->obterSiglaUnidade();
+            $res = Nfe::importarXml($content, $unidade, null);
+        } catch (\Throwable $e) {
+            return back()->withInput()->with('alert-danger', 'Erro ao validar XML no webservice: ' . $e->getMessage());
+        }
+
+        if ($res['status'] === 'error') {
+            return back()->withInput()->with('alert-danger', $res['message']);
+        }
+
+        $alertType = $res['status'] === 'exists' ? 'alert-warning' : 'alert-success';
+        return redirect()->route('nfes.show', $res['nfe'])->with($alertType, $res['message']);
     }
 
     /**
@@ -115,7 +135,8 @@ class NfeController extends Controller
      */
     public function show(Nfe $nfe)
     {
-        //
+        \UspTheme::activeUrl('nfes');
+        return view('nfes.show', compact('nfe'));
     }
 
     /**
@@ -138,7 +159,11 @@ class NfeController extends Controller
      */
     public function update(UpdateNfeRequest $request, Nfe $nfe)
     {
-        //
+        $unidade = trim((string) $request->validated('unidade'));
+        $nfe->unidade = $unidade !== '' ? $unidade : null;
+        $nfe->save();
+
+        return redirect()->route('nfes.show', $nfe)->with('alert-success', 'Unidade atualizada com sucesso.');
     }
 
     /**

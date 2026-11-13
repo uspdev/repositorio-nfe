@@ -1,12 +1,17 @@
 @extends('layouts.app')
 
 @section('content')
-  <div class="h3">Notas fiscais</div>
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <div class="h3 mb-0">Notas fiscais</div>
+    @can('admin')
+      <a href="{{ route('nfes.create') }}" class="btn btn-primary btn-sm">Enviar XML</a>
+    @endcan
+  </div>
 
   <table class="table table-bordered table-sm table-stripped table-hover datatable-simples dt-fixed-header">
     <thead>
       <tr>
-        <th style="width: 55px;">&nbsp;</th>
+        <th style="width: 80px;">&nbsp;</th>
         <th>Sefaz</th>
         <th style="width: 140px;">CNPJ Emitente</th>
         <th>Emitente</th>
