@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Services\Imap;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\DB;
 use PhpMimeMailParser\Parser;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -55,6 +56,32 @@ class Email extends Model
         $sub = 5;
         $lastMessage = Email::orderBy('created_at', 'desc')->first();
         return $lastMessage ? $lastMessage->created_at : now()->subDays($sub);
+    }
+
+    /**
+     * Remove (ou apenas contabiliza em dry-run) e-mails mais antigos que $days dias.
+     */
+    public static function removerAntigos(int $days, bool $dryRun = false): int
+    {
+        if ($days < 1) {
+            throw new \InvalidArgumentException('O prazo de retenção deve ser de pelo menos 1 dia.');
+        }
+
+        $query = self::where('created_at', '<=', now()->subDays($days));
+        if ($dryRun) {
+            return $query->count();
+        }
+
+        $ids = $query->pluck('id');
+        if ($ids->isEmpty()) {
+            return 0;
+        }
+
+        return DB::transaction(function () use ($ids) {
+            Nfe::whereIn('email_id', $ids)->update(['email_id' => null]);
+
+            return self::whereIn('id', $ids)->delete();
+        });
     }
 
     /**

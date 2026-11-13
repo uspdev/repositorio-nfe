@@ -20,6 +20,10 @@ class Kernel extends ConsoleKernel
             ->hourly()
             ->weekdays()
             ->appendOutputTo(storage_path('logs/emails-receive.log'));
+
+        $schedule->command('emails:prune')
+            ->dailyAt('03:00')
+            ->appendOutputTo(storage_path('logs/emails-prune.log'));
     }
 
     /**
