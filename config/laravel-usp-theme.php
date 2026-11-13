@@ -29,6 +29,11 @@ $menu = [
 
 $right_menu = [
     [
+        'text' => '<span class="text-danger"><i class="fas fa-user-tag"></i> Funções</span>',
+        'url' => 'funcoes',
+        'can' => 'admin',
+    ],
+    [
         'key' => 'senhaunica-socialite',
     ],
     [

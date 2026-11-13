@@ -1,8 +1,9 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\NfeController;
 use App\Http\Controllers\EmailController;
+use App\Http\Controllers\FuncaoController;
+use App\Http\Controllers\NfeController;
 
 /*
 |--------------------------------------------------------------------------
@@ -28,6 +29,10 @@ Route::middleware(['auth', 'can:admin'])->group(function () {
     Route::resource('emails', EmailController::class)->only(['index']);
 
     Route::get('estatisticas', [NfeController::class, 'estatisticas']);
+
+    Route::get('funcoes', [FuncaoController::class, 'index'])->name('funcoes.index');
+    Route::post('funcoes', [FuncaoController::class, 'store'])->name('funcoes.store');
+    Route::delete('funcoes/{user}', [FuncaoController::class, 'destroy'])->name('funcoes.destroy');
 });
 
 Route::middleware(['auth', 'can:manager'])->group(function () {
