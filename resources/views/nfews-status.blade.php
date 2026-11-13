@@ -2,7 +2,7 @@
 
 @section('content')
   <h4>Status do Webservice NF-e</h4>
-  <p>Servidor: <b>{{ config('nfe.nfeWs.server') }}</b></p>
+  <p>Servidor: <b>{{ config('repositorio-nfe.nfeWs.server') }}</b></p>
 
   @if (is_array($status))
     <div class="card">

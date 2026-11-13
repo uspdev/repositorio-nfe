@@ -13,14 +13,14 @@ class Imap
 	public static function getMailbox()
 	{
 		if (SELF::$mailbox == null) {
-			$host = config('imap.host');
-			$port = config('imap.port');
-			$encryption = config('imap.encryption');
+			$host = config('repositorio-nfe.imap.host');
+			$port = config('repositorio-nfe.imap.port');
+			$encryption = config('repositorio-nfe.imap.encryption');
 			$hostString = '{' . $host . ':' . $port . '/' . $encryption . '/novalidate-cert/imap}INBOX';
 			SELF::$mailbox = new Mailbox(
 				$hostString,
-				config('imap.username'),
-				config('imap.password'),
+				config('repositorio-nfe.imap.username'),
+				config('repositorio-nfe.imap.password'),
 				false // when $attachmentsDir is false we don't save attachments
 			);
 		}
