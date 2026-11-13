@@ -7760,16 +7760,16 @@
         },
         {
             "name": "uspdev/laravel-usp-theme",
-            "version": "2.8.41",
+            "version": "2.8.42",
             "source": {
                 "type": "git",
                 "url": "https://github.com/uspdev/laravel-usp-theme.git",
-                "reference": "459eb72ca923714933a139a4990437de7f5daad0"
+                "reference": "26a88cd10d26147a94ee265449299ca6609cb79c"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/uspdev/laravel-usp-theme/zipball/459eb72ca923714933a139a4990437de7f5daad0",
-                "reference": "459eb72ca923714933a139a4990437de7f5daad0",
+                "url": "https://api.github.com/repos/uspdev/laravel-usp-theme/zipball/26a88cd10d26147a94ee265449299ca6609cb79c",
+                "reference": "26a88cd10d26147a94ee265449299ca6609cb79c",
                 "shasum": ""
             },
             "require": {
@@ -7807,9 +7807,9 @@
             "description": "usp theme for laravel",
             "support": {
                 "issues": "https://github.com/uspdev/laravel-usp-theme/issues",
-                "source": "https://github.com/uspdev/laravel-usp-theme/tree/2.8.41"
+                "source": "https://github.com/uspdev/laravel-usp-theme/tree/2.8.42"
             },
-            "time": "2026-09-15T16:37:01+00:00"
+            "time": "2026-11-13T14:45:40+00:00"
         },
         {
             "name": "uspdev/nfe-ws-consumer",
