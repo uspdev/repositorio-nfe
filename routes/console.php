@@ -27,7 +27,7 @@ Artisan::command('emails:receive', function () {
     $ret = Email::verificarNovos();
     $msgEmail = 'desde: ' . $ret['lastMessageDate'] . ', baixados: ' . $ret['totalMessages'] . ', novos: ' . $ret['newMessages'];
 
-    $ret = Nfe::parsearNovosEmails();
+    $ret = Email::parsearNovos();
     $msgNfe = 'novos emails: ' . $ret['novosEmails'] . ', novas Nfes: ' . $ret['novasNfes'];
 
     $this->comment($msgEmail);

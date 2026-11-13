@@ -33,7 +33,7 @@ class EmailController extends Controller
         $emailMsg = Email::verificarNovos();
         $msgEmail = 'desde: ' . $emailMsg['lastMessageDate'] . ', baixados: ' . $emailMsg['totalMessages'] . ', novos: ' . $emailMsg['newMessages'];
 
-        $nfeMsg = Nfe::parsearNovosEmails();
+        $nfeMsg = Email::parsearNovos();
         $msgNfe = 'novos emails: ' . $nfeMsg['novosEmails'] . ', novas Nfes: ' . $nfeMsg['novasNfes'];
 
         Log::channel('imapCron')->notice('rodou manual', ['email' => $msgEmail, 'nfe' => $msgNfe]);
@@ -44,7 +44,7 @@ class EmailController extends Controller
 
     public function parse(Email $email)
     {
-        $ret = Nfe::parsearEmail($email);
+        $ret = $email->parsear();
 
         Session::flash('alert-info', ' novas Nfes: ' . $ret['newNfes'] . ', anexos: '  . count($ret['attachments']));
         return back();

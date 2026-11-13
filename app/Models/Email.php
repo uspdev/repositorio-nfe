@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Services\Imap;
 use Illuminate\Support\Carbon;
+use PhpMimeMailParser\Parser;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 
@@ -21,13 +22,21 @@ class Email extends Model
         'status' => 'array',
     ];
 
+    /**
+     * Valores padrão para chaves ausentes em $this->status.
+     *
+     * @var array{attachments: array, parsed: bool}
+     */
     protected $defaultStatus = [
         'attachments' => [],
         'parsed' => false,
     ];
 
     /**
-     * Retorna o status correspondente à chave $key de $email->status
+     * Retorna o status correspondente à chave $key de $email->status.
+     *
+     * @param string $key Chave do array de status (ex.: 'parsed', 'attachments')
+     * @return mixed
      */
     public function status($key)
     {
@@ -35,9 +44,11 @@ class Email extends Model
     }
 
     /**
-     * Retorna a data de criação do ultimo email persistido
+     * Retorna a data de criação do último e-mail persistido.
      *
-     * Se for uma instalação nova retorna os últimos $sub dias
+     * Se for uma instalação nova retorna os últimos $sub dias.
+     *
+     * @return \Illuminate\Support\Carbon
      */
     public static function obterDataUltimoEmail()
     {
@@ -47,9 +58,11 @@ class Email extends Model
     }
 
     /**
-     * Consulta servidor imap por novos emails e guarda
+     * Consulta servidor IMAP por novos e-mails e os armazena no banco de dados.
      *
-     * Agendado para rodar de hora em hora no app\console\kernel.php
+     * Agendado para rodar de hora em hora no app\console\kernel.php.
+     *
+     * @return array{lastMessageDate: \Illuminate\Support\Carbon, totalMessages: int, newMessages: int}
      */
     public static function verificarNovos()
     {
@@ -116,7 +129,10 @@ class Email extends Model
     }
 
     /**
-     * procura na string fornecida (header do email) um email correspondete à unidade
+     * Procura na string fornecida (cabeçalho do e-mail) um endereço correspondente à unidade.
+     *
+     * @param string|null $rawHeader Cabeçalhos brutos do e-mail
+     * @return string Sigla da unidade encontrada (ex.: 'EESC', 'FO') ou 'NONE'
      */
     public static function obterUnidade($rawHeader)
     {
@@ -142,6 +158,84 @@ class Email extends Model
         return 'NONE';
     }
 
+
+    /**
+     * Processa todos os e-mails pendentes (status->parsed = false) em busca de NF-es.
+     *
+     * @return array{novosEmails: int, novasNfes: int} Contadores de e-mails processados e novas NF-es importadas
+     */
+    public static function parsearNovos(): array
+    {
+        $emails = self::where('status->parsed', false)->get();
+
+        $countNfes = 0;
+        foreach ($emails as $email) {
+            $p = $email->parsear();
+            $countNfes += $p['newNfes'];
+        }
+
+        return [
+            'novosEmails' => count($emails),
+            'novasNfes' => $countNfes,
+        ];
+    }
+
+    /**
+     * Parseia os anexos do e-mail, valida XMLs no nfe-ws e atualiza seu status.
+     *
+     * @return array{newNfes: int, attachments: array<int, array{filename: string, size: int, contenttype: string, statusConsulta: string}>}
+     */
+    public function parsear(): array
+    {
+        $anexos = $this->listarAnexos();
+        $nfeCount = 0;
+        $attachments = [];
+
+        foreach ($anexos as $anexo) {
+            $consulta = [];
+            $content = $anexo->getContent();
+            if (strtolower(substr($anexo->getFilename(), -3)) == 'xml') {
+                $res = Nfe::importarXml($content, self::obterUnidade($this->raw_header), $this->id);
+                $consulta = $res['consulta'];
+                if ($res['status'] === 'created') {
+                    $nfeCount++;
+                }
+            }
+
+            // salva no email->status anexos, nome, tamanho
+            $attachments[] = [
+                'filename' => $anexo->getFilename(),
+                'size' => strlen($content),
+                'contenttype' => $anexo->getContentType(),
+                'statusConsulta' => $consulta['status'] ?? '', // precisa melhorar isso
+            ];
+        }
+
+        $this->status = [
+            'parsed' => true,
+            'parsedate' => now(),
+            'attachments' => $attachments,
+        ];
+        $this->save();
+
+        return [
+            'newNfes' => $nfeCount,
+            'attachments' => $attachments,
+        ];
+    }
+
+    /**
+     * Extrai e retorna os anexos MIME do e-mail utilizando php-mime-mail-parser.
+     *
+     * @return \PhpMimeMailParser\Attachment[] Lista de anexos extraídos
+     */
+    public function listarAnexos(): array
+    {
+        $parser = new Parser();
+        $parser->setText($this->raw_header . $this->raw_body);
+
+        return $parser->getAttachments([true]);
+    }
 
     /**
      * Como foi guardado em utf8, vamos reverter ao acessar
