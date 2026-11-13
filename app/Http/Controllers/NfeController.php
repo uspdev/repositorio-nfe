@@ -256,4 +256,19 @@ class NfeController extends Controller
 
         return view('nfes.estatisticas', compact('totaisPorEmit', 'totaisPorDest', 'anos'));
     }
+
+    /**
+     * Exibe o status do webservice nfe-ws.
+     */
+    public function nfewsStatus()
+    {
+        \UspTheme::activeUrl('nfews-status');
+        try {
+            $status = Nfews::getInstance()->status();
+        } catch (\Throwable $e) {
+            $status = ['status' => 'erro', 'erro' => $e->getMessage()];
+        }
+
+        return view('nfews-status', ['status' => $status]);
+    }
 }

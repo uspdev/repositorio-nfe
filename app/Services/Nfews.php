@@ -20,4 +20,12 @@ class Nfews extends NfeWsConsumer
         }
         return self::$nfeWsConsumer;
     }
+
+    /**
+     * Define ou limpa a instância singleton (útil para testes).
+     */
+    public static function setInstance(?NfeWsConsumer $instance): void
+    {
+        self::$nfeWsConsumer = $instance;
+    }
 }
