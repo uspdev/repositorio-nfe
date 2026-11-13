@@ -35,7 +35,7 @@ class NfeController extends Controller
     /**
      * Faz o download do arquivo xml da nfe
      */
-    public static function xmlDownload(Nfe $nfe)
+    public function xmlDownload(Nfe $nfe)
     {
         $filename = $nfe->chave . '-procNFe.xml';
         return response()->streamDownload(function () use ($nfe) {
@@ -48,42 +48,40 @@ class NfeController extends Controller
     /**
      * Faz o download da danfe
      */
-    public static function danfeDownload(Nfe $nfe)
+    public function danfeDownload(Nfe $nfe)
     {
         $danfe = Nfews::getInstance()->obterDanfe($nfe->xml);
-        $filename = $nfe->chave . '-Danfe.pdf';
-        $contentType = ['content-type' => 'application/x-pdf'];
 
-        return response()->streamDownload(function () use ($danfe) {
-            echo $danfe;
-        }, $filename, $contentType);
+        return $this->pdfDownload((string) $danfe, $nfe->chave . '-Danfe.pdf');
     }
 
     /**
      * Faz o download do relatório da sefaz
      */
-    public static function sefazDownload(Nfe $nfe)
+    public function sefazDownload(Nfe $nfe)
     {
-        $consulta = Nfews::getInstance()->consultaXML($nfe->xml);
+        try {
+            $resultado = $nfe->atualizarConsultaSefaz();
+            if (!$resultado['ok']) {
+                return back()->with('alert-danger', $resultado['message']);
+            }
 
-        if (!isset($consulta['sefaz']['dhConsulta'])) {
-            return back()->with('alert-danger', 'Consulta inválida ou não realizada: cStat = ' . $consulta['prot']['cStat']);
+            $sefaz = Nfews::getInstance()->obterSefaz($nfe->xml);
+        } catch (\Throwable $e) {
+            return back()->with('alert-danger', 'Erro ao consultar Sefaz no webservice: ' . $e->getMessage());
         }
 
-        if ($consulta['sefaz']['dhConsulta'] != $nfe->consulta['dhConsulta']) {
-            $nfe->prot = $consulta['prot'];
-            $nfe->consulta = $consulta['sefaz'];
-            $nfe->save();
-        }
+        return $this->pdfDownload((string) $sefaz, $nfe->chave . '-Sefaz.pdf');
+    }
 
-        $sefaz = Nfews::getInstance()->obterSefaz($nfe->xml);
-
-        $filename = $nfe->chave . '-Sefaz.pdf';
-        $contentType = ['content-type' => 'application/x-pdf'];
-
-        return response()->streamDownload(function () use ($sefaz) {
-            echo $sefaz;
-        }, $filename, $contentType);
+    /**
+     * Retorna resposta de stream para download de arquivo PDF.
+     */
+    private function pdfDownload(string $conteudo, string $filename)
+    {
+        return response()->streamDownload(function () use ($conteudo) {
+            echo $conteudo;
+        }, $filename, ['content-type' => 'application/x-pdf']);
     }
 
     /**

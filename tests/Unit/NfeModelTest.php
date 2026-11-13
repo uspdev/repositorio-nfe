@@ -136,6 +136,57 @@ XML;
         $this->assertDatabaseCount('nfes', 0);
     }
 
+    public function test_atualizar_consulta_sefaz_updates_when_dh_consulta_changes(): void
+    {
+        $chave = '35260500000000000100550010000000011000000010';
+        $nfe = new Nfe();
+        $nfe->chave = $chave;
+        $nfe->xml = $this->sampleNfeProcXml($chave);
+        $nfe->prot = ['cStat' => '100'];
+        $nfe->emit = [];
+        $nfe->dest = [];
+        $nfe->ide = [];
+        $nfe->consulta = [];
+        $nfe->infadic = '';
+        $nfe->ano = 2026;
+        $nfe->save();
+
+        $mock = Mockery::mock(NfeWsConsumer::class);
+        $mock->shouldReceive('consultaXML')
+            ->once()
+            ->with($nfe->xml)
+            ->andReturn([
+                'prot' => ['cStat' => '100', 'nProt' => '999'],
+                'sefaz' => ['dhConsulta' => '2026-05-11T12:00:00-03:00'],
+            ]);
+        Nfews::setInstance($mock);
+
+        $res = $nfe->atualizarConsultaSefaz();
+
+        $this->assertTrue($res['ok']);
+        $nfe->refresh();
+        $this->assertSame('2026-05-11T12:00:00-03:00', $nfe->consulta['dhConsulta']);
+        $this->assertSame('999', $nfe->prot['nProt']);
+    }
+
+    public function test_atualizar_consulta_sefaz_returns_error_when_dh_consulta_missing(): void
+    {
+        $nfe = new Nfe();
+        $nfe->xml = '<xml/>';
+        $nfe->consulta = [];
+
+        $mock = Mockery::mock(NfeWsConsumer::class);
+        $mock->shouldReceive('consultaXML')
+            ->once()
+            ->andReturn(['prot' => ['cStat' => '217']]);
+        Nfews::setInstance($mock);
+
+        $res = $nfe->atualizarConsultaSefaz();
+
+        $this->assertFalse($res['ok']);
+        $this->assertStringContainsString('cStat = 217', $res['message']);
+    }
+
     private function sampleNfeProcXml(string $chave = '35260500000000000100550010000000011000000010'): string
     {
         return <<<XML

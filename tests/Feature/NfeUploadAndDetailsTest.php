@@ -173,6 +173,51 @@ class NfeUploadAndDetailsTest extends TestCase
             ->assertSessionHasErrors('unidade');
     }
 
+    public function test_manager_can_download_sefaz_pdf_and_updates_consulta(): void
+    {
+        $manager = $this->createManagerUser();
+        $nfe = $this->createStoredNfe('35260500000000000100550010000000081000000080');
+
+        $mock = Mockery::mock(NfeWsConsumer::class);
+        $mock->shouldReceive('consultaXML')
+            ->once()
+            ->with($nfe->xml)
+            ->andReturn([
+                'prot' => ['cStat' => '100', 'nProt' => '888'],
+                'sefaz' => ['dhConsulta' => '2026-05-12T10:00:00-03:00'],
+            ]);
+        $mock->shouldReceive('obterSefaz')
+            ->once()
+            ->with($nfe->xml)
+            ->andReturn('%PDF-1.4 fake');
+        Nfews::setInstance($mock);
+
+        $response = $this->actingAs($manager)->get("/nfes/{$nfe->id}/sefaz");
+
+        $response->assertOk();
+        $response->assertHeader('content-type', 'application/x-pdf');
+        $this->assertSame('%PDF-1.4 fake', $response->streamedContent());
+        $this->assertSame('2026-05-12T10:00:00-03:00', $nfe->fresh()->consulta['dhConsulta']);
+    }
+
+    public function test_sefaz_download_redirects_with_error_when_ws_fails(): void
+    {
+        $manager = $this->createManagerUser();
+        $nfe = $this->createStoredNfe('35260500000000000100550010000000091000000090');
+
+        $mock = Mockery::mock(NfeWsConsumer::class);
+        $mock->shouldReceive('consultaXML')
+            ->once()
+            ->andReturn(null);
+        Nfews::setInstance($mock);
+
+        $this->actingAs($manager)
+            ->from("/nfes/{$nfe->id}")
+            ->get("/nfes/{$nfe->id}/sefaz")
+            ->assertRedirect("/nfes/{$nfe->id}")
+            ->assertSessionHas('alert-danger');
+    }
+
     private function createAdminUser(): User
     {
         $user = User::factory()->create();

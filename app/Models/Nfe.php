@@ -171,4 +171,35 @@ class Nfe extends Model
             'consulta' => $consulta,
         ];
     }
+
+    /**
+     * Consulta o XML na Sefaz via nfe-ws e atualiza protocolo e data da consulta quando houver alteração.
+     *
+     * @return array{ok: bool, message: string}
+     */
+    public function atualizarConsultaSefaz(): array
+    {
+        $consulta = Nfews::getInstance()->consultaXML($this->xml);
+
+        if (!is_array($consulta) || !isset($consulta['sefaz']['dhConsulta'])) {
+            $cStat = is_array($consulta) ? ($consulta['prot']['cStat'] ?? null) : null;
+            $erro = is_array($consulta)
+                ? ($consulta['erro'] ?? $consulta['mensagem'] ?? $consulta['message'] ?? null)
+                : (is_string($consulta) && $consulta !== '' ? $consulta : null);
+
+            $mensagem = $cStat
+                ? 'Consulta inválida ou não realizada: cStat = ' . $cStat
+                : ($erro ?: 'Consulta inválida ou não realizada.');
+
+            return ['ok' => false, 'message' => $mensagem];
+        }
+
+        if ($consulta['sefaz']['dhConsulta'] != ($this->consulta['dhConsulta'] ?? null)) {
+            $this->prot = $consulta['prot'] ?? [];
+            $this->consulta = $consulta['sefaz'];
+            $this->save();
+        }
+
+        return ['ok' => true, 'message' => 'Consulta atualizada com sucesso.'];
+    }
 }
