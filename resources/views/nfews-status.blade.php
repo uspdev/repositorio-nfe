@@ -13,27 +13,36 @@
     <div class="row">
       <div class="col-md-6 mb-3">
         <div class="card h-100">
-          <div class="card-header {{ ($status['status'] ?? '') === 'ok' ? 'bg-success text-white' : 'bg-danger text-white' }}">
-            Certificado Digital: {{ $status['mensagem'] ?? ($status['erro'] ?? 'Status da Consulta') }}
-          </div>
-          <div class="card-body">
-            @if (isset($status['erro']))
-              <p class="text-danger mb-0"><strong>Erro:</strong> {{ $status['erro'] }}</p>
-            @else
-              <ul class="list-unstyled mb-0">
-                <li><strong>Empresa:</strong> {{ $status['empresa'] ?? '-' }}</li>
-                <li><strong>CNPJ:</strong> {{ $status['cnpj'] ?? '-' }}</li>
-                <li><strong>Validade:</strong> {{ $status['validade'] ?? '-' }}</li>
-                <li><strong>Situação:</strong>
-                  @if (!empty($status['expirado']))
-                    <span class="badge badge-danger">Expirado</span>
-                  @else
-                    <span class="badge badge-success">Válido</span>
-                  @endif
-                </li>
-              </ul>
-            @endif
-          </div>
+          @if (($status['autenticado'] ?? true) === false)
+            <div class="card-header bg-secondary text-white">
+              Certificado Digital: Autenticação necessária
+            </div>
+            <div class="card-body">
+              <p class="text-muted mb-0">{{ $status['mensagem'] ?? 'Autentique-se com API Key para visualizar os dados do certificado.' }}</p>
+            </div>
+          @else
+            <div class="card-header {{ ($status['status'] ?? '') === 'ok' ? 'bg-success text-white' : 'bg-danger text-white' }}">
+              Certificado Digital: {{ $status['mensagem'] ?? ($status['erro'] ?? 'Status da Consulta') }}
+            </div>
+            <div class="card-body">
+              @if (isset($status['erro']))
+                <p class="text-danger mb-0"><strong>Erro:</strong> {{ $status['erro'] }}</p>
+              @else
+                <ul class="list-unstyled mb-0">
+                  <li><strong>Empresa:</strong> {{ $status['empresa'] ?? '-' }}</li>
+                  <li><strong>CNPJ:</strong> {{ $status['cnpj'] ?? '-' }}</li>
+                  <li><strong>Validade:</strong> {{ $status['validade'] ?? '-' }}</li>
+                  <li><strong>Situação:</strong>
+                    @if (!empty($status['expirado']))
+                      <span class="badge badge-danger">Expirado</span>
+                    @else
+                      <span class="badge badge-success">Válido</span>
+                    @endif
+                  </li>
+                </ul>
+              @endif
+            </div>
+          @endif
         </div>
       </div>
 
