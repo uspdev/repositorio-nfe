@@ -4,15 +4,10 @@
 
 @section('styles')
   @parent
-  <style>
-    /*seus estilos*/
-
-  </style>
+  @stack('styles')
 @endsection
 
 @section('javascripts_bottom')
   @parent
-  <script>
-    // Seu código .js
-  </script>
+  @stack('scripts')
 @endsection

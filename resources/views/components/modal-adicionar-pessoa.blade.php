@@ -33,8 +33,7 @@
   </div>
 </div>
 
-@section('javascripts_bottom')
-  @parent
+@push('scripts')
   <script>
     $(document).ready(function() {
       var $modal = $('#{{ $id }}');
@@ -58,11 +57,10 @@
       });
     });
   </script>
-@endsection
+@endpush
 
 @once
-  @section('javascripts_bottom')
-    @parent
+  @push('scripts')
     <script>
       $(document).on('select2:open', function() {
         var searchField = document.querySelector('.select2-search__field');
@@ -71,5 +69,5 @@
         }
       });
     </script>
-  @endsection
+  @endpush
 @endonce
